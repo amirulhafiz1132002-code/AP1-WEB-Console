@@ -1,70 +1,73 @@
 # AP1-WEB-Console Branch Forensics
 
-**Status:** VERIFIED / FINAL CLEANUP DECISION
+**Status:** VERIFIED / CLEANUP DECISION LOCKED
 **Canonical branch:** `Amrhz`
-**Audit principle:** REAL STATE > UI SIMULATION
 
 ## Purpose
 
-This record locks the branch-forensics result after source comparison and unique-file extraction review. It separates the canonical source from historical branches that no longer add verified runtime value.
+This document records the final branch-cleanup decision so branch history is not confused with the canonical AP1-WEB-Console source.
 
-## Final decision
+## Canonical source
 
-### KEEP — canonical source
+- `Amrhz` — **KEEP / CANONICAL**
+- `Amrhz` is the current source of truth for AP1-WEB-Console.
 
-- `Amrhz` — **KEEP**
-  - Canonical AP1-WEB-Console source of truth.
-  - All further development and verification should start from this branch unless a later architecture decision explicitly changes the canonical source.
+## Cleanup decision
 
-### CLEANUP — no verified unique runtime value remaining
+The following branches were reviewed through branch comparison and unique-asset extraction. No verified unique runtime component was found that must be migrated into `Amrhz`.
 
-The following branches are classified as **DEAD / CLEANUP CANDIDATES** after comparison and extraction review:
+### Cleanup candidates
 
-- `Ap1-projects-Console-workflows` — superseded by `Amrhz`.
-- `feature/file-management-integration` — already incorporated into `Amrhz`.
-- `feat/sofa-integration` — useful test utilities were already present in `Amrhz`; remaining SOFA material is process/documentation/workflow content, not verified AP1 runtime.
-- `file-ingest-skeleton` — no verified file-ingestion runtime was established; remaining unique material is documentation/configuration rather than a proven runtime component.
-- `amirulhafiz1132002-code-patch-1` through `amirulhafiz1132002-code-patch-19` — historical patch branches; inspected examples and lineage show obsolete/disconnected snapshots rather than current AP1 source.
-- `alert-autofix-9`, `alert-autofix-10`, `alert-fix-10` — superseded security/autofix branches.
-- `My-crypto` — disconnected experiment, not part of the current AP1-WEB-Console lineage.
-- `codespace-orange-engine-r4jx5pj666v9hg7r` — disconnected Codespace experiment, not part of the current AP1-WEB-Console lineage.
+- `Ap1-projects-Console-workflows`
+- `My-crypto`
+- `alert-autofix-9`
+- `alert-autofix-10`
+- `alert-fix-10`
+- `amirulhafiz1132002-code-patch-1` through `amirulhafiz1132002-code-patch-19`
+- `codespace-orange-engine-r4jx5pj666v9hg7r`
+- `feat/sofa-integration`
+- `feature/file-management-integration`
+- `file-ingest-skeleton`
 
-## Extraction result
+## Extraction findings
 
-No branch above contains a verified unique runtime component that must be migrated into `Amrhz` before cleanup.
+### `feat/sofa-integration`
 
-Important findings:
+Its reusable Python testing utilities overlap the canonical `tests/` structure and are already present on `Amrhz`. The remaining SOFA guide/workflow/template material is process or integration-specific and is not required by the current AP1 runtime architecture.
 
-- `feat/sofa-integration` contained `tests/fixtures.py` and `tests/utils.py`, but equivalent reusable testing utilities are already present on `Amrhz`.
-- `tests/fixtures.py` contains mock AI behavior for testing; it is **not** evidence of live AI execution.
-- `file-ingest-skeleton` contained `Rival-Ai-Ap1-Asistance-models-prompt.yml`; this is prompt/configuration documentation, not proof of live AI runtime or file-ingestion implementation.
-- No branch is allowed to become an alternative source of truth merely because it contains a more ambitious README, prompt, workflow, or UI claim.
+Mock AI helpers remain test fixtures only and are not evidence of live AI execution.
 
-## Deletion state
+### `file-ingest-skeleton`
 
-**VERIFIED:** cleanup classification is complete.
+Review did not establish a verified file-ingestion runtime implementation that needs migration. Its notable prompt/configuration material is documentation/configuration, not proof of a live AI or ingestion runtime.
 
-**NOT VERIFIED:** remote branch deletion is complete.
+### `feature/file-management-integration`
 
-The connected GitHub interface available for this audit does not expose a branch-delete operation. Therefore this record deliberately does **not** claim that the remote branches have been deleted.
+Its work is already represented in the canonical `Amrhz` history through the merge into the current lineage.
 
-The correct manual cleanup action is to delete the branches classified above from GitHub, while retaining `Amrhz`.
+### Other cleanup candidates
 
-## Post-cleanup rule
+Old patch, alert, and disconnected experimental branches were classified as obsolete, superseded, or outside the current AP1-WEB-Console lineage during the forensic review.
 
-After manual deletion, the expected active branch set for this repository should be centered on:
+## Execution boundary
 
-- `Amrhz` — canonical development source.
+**Verified:** forensic review and cleanup decision are complete.
 
-Any future branch should have an explicit purpose and should not silently become a competing source of truth.
+**Not executed:** remote branch deletion, because the connected GitHub capability available to this workspace does not expose a branch-delete operation.
 
-## Truth rules
+This is intentional: no ref is moved or force-updated merely to simulate deletion.
 
-1. Do not treat branch names, README claims, prompts, or UI labels as implementation proof.
-2. Do not copy mock AI behavior into runtime paths and call it live AI.
-3. Do not reopen dead branches merely because they contain interesting wording or generated artifacts.
-4. Preserve verified value; remove historical noise.
-5. Human approval remains required for architectural source-of-truth changes.
-6. `Amrhz` remains canonical unless a later architecture decision explicitly changes it.
+## Source-file cleanup
 
-**Decision:** PRESERVE VALUE → REMOVE NOISE → LOCK SOURCE → MOVE FORWARD.
+No source file on `Amrhz` was deleted during this cleanup because no individual runtime file was independently proven obsolete by the branch-forensics task. Deleting source files without that evidence would violate the project truth protocol.
+
+## Rules
+
+1. Do not treat branch names or README claims as implementation proof.
+2. Do not copy mock AI code into runtime paths and call it live AI.
+3. Do not delete source files without evidence that they are obsolete.
+4. `Amrhz` remains the canonical source unless a later architecture decision explicitly changes it.
+5. REAL STATE > UI SIMULATION.
+6. EVIDENCE > CLAIM.
+7. HUMAN INTENTION > AI ASSUMPTION.
+8. VERIFICATION > BLIND TRUST.
