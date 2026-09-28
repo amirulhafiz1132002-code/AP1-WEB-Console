@@ -1,75 +1,135 @@
-# 🧠 AMRHZ-Portfolio: Auto AI Builder System
+# AP1-WEB-Console
 
-Welcome to the **AMRHZ AI System Workspace**. This workspace is an integrated ecosystem designed to build and deploy intelligent, highly automated AI systems rather than traditional standalone applications.
+> Implementation-oriented workspace for the AMRHZ / AP1 ecosystem.
 
-The core objective of this project is to build **App 1 (Auto AI Builder System)**, powered by an advanced OpenAI core layer. The ecosystem focuses on decoupled logic processing, standalone contextual memory, and robust multi-agent automation matrices.
+**Project state: PARTIAL**
 
----
+AP1-WEB-Console is the application-side repository of the AMRHZ ecosystem. It currently contains a React frontend, a FastAPI backend, MongoDB runtime integration, and read-oriented GitHub API integration.
 
-## 🚀 Core Architecture
+Core principles:
+- REAL STATE > UI SIMULATION
+- EVIDENCE > CLAIM
+- HUMAN INTENTION > AI ASSUMPTION
 
-The repository is modularly structured into clear functional layers to ensure clean code separation and scalability:
+## Role in the ecosystem
 
-* 📂 **`backend/`** – Powered by Python. Manages algorithmic pipelines, custom intelligence layers, and API handling.  
-* 📂 **`frontend/`** – Contains responsive, low-latency UI components built with JavaScript, HTML5, and CSS3 for telemetry monitoring.  
-* 📂 **`memory/`** – Dedicated persistence layer ensuring independent memory retention and contextual recall for the AI brain.  
-* 📂 **`tests/` & `test_reports/`** – Automated multi-agent verification environment synced via the `test_result.md` pipeline.  
+```text
+AMRHZ Architecture Core
+        |
+        | principles / architecture / protocols
+        v
+AP1-WEB-Console
+        |
+        | implementation
+        v
+Current AP1 application capabilities
+```
 
----
+AMRHZ Architecture Core is the supporting architecture and principles repository.
+AP1-WEB-Console is the implementation-oriented application repository.
+No runtime dependency between them is claimed unless implemented and evidenced in code.
 
-## 📊 Telemetry & Web Ecosystem
+## Current architecture
+See docs/architecture.md.
 
-The presentation and control layers consist of several tightly integrated dashboard nodes:
+High-level boundary:
 
-1. **`AMRHZ-Ai-system.html`** – Core platform node for tracking model decisions and engine states.  
-2. **`AP1-dashboard-console.html`** – Primary administrative command center for application controls.  
-3. **`About.html`** – Conceptual deep-dive detailing the system architecture, design philosophy, and core visions.  
-4. **`analytics.html`** – Performance telemetry offering real-time analytical monitoring.  
-5. **`landing_pages.html`** – Client-facing presentation layer for system onboarding and inquiry handling.  
+```text
+Human -> React Frontend -> FastAPI Backend
+                         |             |
+                         v             v
+                      MongoDB      GitHub API
+                                      |
+                                      v
+                               In-memory cache
+```
 
----
+## Currently implemented
+- React frontend — VERIFIED
+- FastAPI backend — VERIFIED
+- GitHub read integration — VERIFIED
+- MongoDB status storage — VERIFIED
 
-## 🛠️ Technical Stack Matrix
+Evidence paths:
+- frontend/
+- frontend/package.json
+- backend/server.py
+- backend/routes/github_routes.py
+- backend/services/github_service.py
 
-| Layer               | Technology              | Primary Domain                                      |
-|---------------------|-------------------------|-----------------------------------------------------|
-| **Intelligence Core** | OpenAI API Framework   | Autonomous reasoning, decision-making, custom logic |
-| **Backend / Logic**   | Python                 | High-throughput data processing & secure APIs       |
-| **Frontend Node**     | JavaScript (ES6+), HTML5, CSS3 | Dynamic dashboards & command telemetry       |
-| **Validation Layer**  | Unified YAML Testing Framework | Automated agent-to-agent verification loops |
+Current GitHub routes:
+- GET /api/github/user
+- GET /api/github/repositories
+- GET /api/github/stats
+- GET /api/github/health
 
----
+## Not currently claimed as implemented
+The following remain UNKNOWN or future until implementation and reproducible evidence exist:
+- autonomous AI agent execution
+- persistent AI memory
+- automatic repository modification
+- AP1 branch creation
+- AP1 pull-request creation
+- automatic merge
+- AP1-managed CI orchestration
+- runtime approval engine
+- persistent audit-event system
 
-##Multi pages website 
-Tab dengan `isCurrent=true` ialah tab yang sedang aktif/dilihat oleh pengguna.  
-Tab dengan `isCurrent=false` ialah tab lain yang terbuka di latar belakang.
+A UI, README statement, or architecture concept does not change these states.
 
-```json
-edge_all_open_tabs = [
-  {
-    "pageTitle": "AP1-WEB-Console/README.md · amirulhafiz1132002-code/AP1-WEB-Console",
-    "pageUrl": "https://github.com/amirulhafiz1132002-code/AP1-WEB-Console/blob/Amrhz/README.md",
-    "tabId": 1595912839,
-    "isCurrent": true
-  },
-  {
-    "pageTitle": "AP1-WEB-Console/Issues · amirulhafiz1132002-code/AP1-WEB-Console",
-    "pageUrl": "https://github.com/amirulhafiz1132002-code/AP1-WEB-Console/issues",
-    "tabId": 1595912840,
-    "isCurrent": false
-  },
-  {
-    "pageTitle": "AP1-WEB-Console/Pull Requests · amirulhafiz1132002-code/AP1-WEB-Console",
-    "pageUrl": "https://github.com/amirulhafiz1132002-code/AP1-WEB-Console/pulls",
-    "tabId": 1595912841,
-    "isCurrent": false
-  },
-  {
-    "pageTitle": "AP1-WEB-Console/Security · amirulhafiz1132002-code/AP1-WEB-Console",
-    "pageUrl": "https://github.com/amirulhafiz1132002-code/AP1-WEB-Console/security",
-    "tabId": 1595912842,
-    "isCurrent": false
-  }
-]
-author by
-Muhammad Amirul Hafiz Bin Md Khalil Miah 
+## API contracts
+See contracts.md for the current API surface and the explicit boundary between implemented and planned contracts.
+
+## Truth model
+Project maturity:
+CONCEPT -> PARTIAL -> VERIFIED -> LIVE
+ARCHIVED is a terminal project state.
+
+Evidence conditions:
+UNKNOWN / CONFLICTING / FAILED / FALLBACK
+
+A capability should be labelled VERIFIED only when implementation is accompanied by credible reproducible evidence.
+
+## First AP1 capability boundary
+
+```text
+User
+  |
+  v
+Select repository
+  |
+  v
+AP1 reads real repository
+  |
+  v
+Structured analysis
+  |
+  v
+Evidence + UNKNOWN
+  |
+  v
+Human review
+```
+
+Repository mutation is outside this first milestone.
+Future write operations should follow:
+INSPECT -> PROPOSE -> HUMAN APPROVAL -> EXECUTE -> VERIFY -> AUDIT
+
+## Development rule
+- inspect before modifying
+- prefer the smallest useful implementation
+- require reproducible evidence
+- preserve explicit UNKNOWN states
+- require human approval before consequential writes
+- document actual runtime state
+
+## Repository structure
+```text
+AP1-WEB-Console/
+├── backend/
+├── frontend/
+├── tests/
+├── contracts.md
+└── docs/
+    └── architecture.md
+```
