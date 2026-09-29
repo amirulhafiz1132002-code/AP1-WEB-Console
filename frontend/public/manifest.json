@@ -1,0 +1,9 @@
+{
+  "name": "AP1 Web Console",
+  "short_name": "AP1",
+  "description": "AMRHZ AP1 central web console.",
+  "start_url": "./",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#000000"
+}
