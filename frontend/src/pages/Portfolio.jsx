@@ -3,6 +3,7 @@ import { Header } from '../components/Header';
 import { Hero } from '../components/Hero';
 import { ProjectCard } from '../components/ProjectCard';
 import { Footer } from '../components/Footer';
+import { NeuralNetworkLayer } from '../components/NeuralNetworkLayer';
 import { githubAPI } from '../services/api';
 import { roadmapPhases, techStack, achievements } from '../mock';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
@@ -98,6 +99,7 @@ export const Portfolio = () => {
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       <Header />
       <Hero userData={userData} stats={stats} loading={loading} />
+      <NeuralNetworkLayer />
 
       {/* About Section */}
       <section id="about" className="py-24 bg-white dark:bg-slate-900">
