@@ -22,7 +22,7 @@ class OpenAIService:
     def __init__(self):
         self.api_key = os.environ.get("OPENAI_API_KEY", "")
         self.model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
-        self.client = AsyncOpenAI(api_key=self.api_key) if self.api_key else None
+        self.client = AsyncOpenAI(api_key=self.api_key, max_retries=0) if self.api_key else None
         self.max_tokens = int(os.environ.get("OPENAI_MAX_TOKENS", "2048"))
         self.temperature = float(os.environ.get("OPENAI_TEMPERATURE", "0.7"))
 
