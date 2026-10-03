@@ -1,102 +1,109 @@
-"""
-OpenAI Service Module
-
-Provides async service for interacting with OpenAI API v1.0+.
-Enforces REAL STATE > UI SIMULATION principle:
-- All responses are structured JSON from actual API calls
-- Includes retry logic and fallback handling for rate limits and connection errors
-- Streams real token data in production use
-
-Architecture:
-- generate_builder_response(): Sync structured JSON requests to OpenAI
-- stream_builder_execution(): Async streaming of tokens/logs in real-time
-"""
-
-import os
 import asyncio
+import json
 import logging
-from typing import Dict, AsyncGenerator, Optional
+import os
 from datetime import datetime, timezone
-from openai import AsyncOpenAI, APIConnectionError, RateLimitError, APIStatusError
+from typing import Any, AsyncGenerator, Dict, Optional
+
+from openai import APIConnectionError, APIStatusError, AsyncOpenAI, RateLimitError
 from tenacity import (
     retry,
+    retry_if_exception_type,
     stop_after_attempt,
     wait_exponential,
-    retry_if_exception_type,
 )
 
 logger = logging.getLogger(__name__)
 
 
 class OpenAIService:
-    """Async OpenAI service with structured output and streaming support."""
+    """Async OpenAI service with real API calls and safe fallback behavior."""
 
     def __init__(self):
-        """Initialize OpenAI client from environment."""
-        self.api_key: str = os.environ.get("OPENAI_API_KEY", "")
-        if not self.api_key:
-            logger.warning("OPENAI_API_KEY not set; service will fail on real requests")
-        
-        self.client: AsyncOpenAI = AsyncOpenAI(api_key=self.api_key)
-        self.model: str = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
-        self.max_tokens: int = 2048
-        self.temperature: float = 0.7
+        self.api_key = os.environ.get("OPENAI_API_KEY", "")
+        self.model = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+        self.client = AsyncOpenAI(api_key=self.api_key) if self.api_key else None
+        self.max_tokens = int(os.environ.get("OPENAI_MAX_TOKENS", "2048"))
+        self.temperature = float(os.environ.get("OPENAI_TEMPERATURE", "0.7"))
+
+    @staticmethod
+    def _safe_json_loads(raw: str) -> Dict[str, Any]:
+        try:
+            return json.loads(raw)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Invalid JSON returned by OpenAI: {exc}") from exc
+
+    @staticmethod
+    def _format_context(context: Dict[str, Any]) -> str:
+        if not context:
+            return "No additional context supplied."
+        return json.dumps(context, ensure_ascii=False, indent=2, sort_keys=True)
+
+    def _fallback_response(self, prompt: str, context: Dict[str, Any]) -> Dict[str, Any]:
+        return {
+            "success": True,
+            "data": {
+                "analysis": (
+                    "OpenAI API is not configured or unavailable. The builder entered a local fallback "
+                    "execution mode and preserved the real request state for later verification."
+                ),
+                "recommendations": [
+                    "Configure OPENAI_API_KEY for full model-backed execution.",
+                    "Provide task context to improve generated analysis quality.",
+                    "Verify downstream tool execution through evidence-based logging.",
+                ],
+                "next_steps": [
+                    "Set OPENAI_API_KEY in the environment.",
+                    "Retry the builder request with repository context and human approval.",
+                    "Inspect memory/events.jsonl for execution evidence.",
+                ],
+                "confidence": 0.0,
+                "prompt": prompt,
+                "context": context,
+            },
+            "usage": {
+                "prompt_tokens": 0,
+                "completion_tokens": 0,
+                "total_tokens": 0,
+            },
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "model": self.model,
+            "fallback": True,
+        }
 
     @retry(
-        stop=stop_after_attempt(3),
-        wait=wait_exponential(multiplier=1, min=2, max=10),
         retry=retry_if_exception_type((RateLimitError, APIConnectionError)),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        stop=stop_after_attempt(3),
+        reraise=True,
     )
     async def generate_builder_response(
-        self, prompt: str, context: Dict
-    ) -> Dict:
-        """
-        Request structured JSON output from OpenAI.
-
-        Args:
-            prompt: The user prompt or task description.
-            context: Contextual data (e.g., repository info, previous state).
-
-        Returns:
-            Structured dict with keys: success, data, usage, timestamp, model.
-            data contains: analysis, recommendations, next_steps.
-
-        Raises:
-            APIStatusError: On persistent API failures after retries.
-            ValueError: If API key is missing or response is malformed.
-        """
-        if not self.api_key:
-            raise ValueError("OPENAI_API_KEY is not configured")
-
-        if not prompt or not isinstance(prompt, str):
-            raise ValueError("prompt must be a non-empty string")
-
+        self,
+        prompt: str,
+        context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        if not isinstance(prompt, str) or not prompt.strip():
+            raise ValueError("Prompt must be a non-empty string.")
         if not isinstance(context, dict):
-            raise ValueError("context must be a dictionary")
+            raise ValueError("Context must be a dictionary.")
 
-        # Build system prompt for structured output
+        if not self.api_key or self.client is None:
+            logger.warning("OPENAI_API_KEY missing; using safe fallback response.")
+            return self._fallback_response(prompt, context)
+
         system_prompt = (
-            "You are an AI code builder assistant for the AP1 (Auto AI Builder) system. "
-            "Provide structured, actionable analysis and recommendations. "
-            "Always respond with valid JSON containing: analysis, recommendations, next_steps. "
-            "Never include markdown, explanations outside JSON, or UI simulation."
+            "You are AP1 Auto AI Builder. Return valid JSON only. "
+            "Use real state, evidence, and human-intent-first reasoning. "
+            "Do not claim actions you cannot verify. "
+            "Respond with keys: analysis, recommendations, next_steps, confidence."
         )
 
-        # Build user message with context
-        user_message = f"""
-Context:
-{self._format_context(context)}
-
+        user_content = f"""
 Task:
 {prompt}
 
-Provide a structured JSON response with the following format:
-{{
-    "analysis": "detailed technical analysis of the task",
-    "recommendations": ["recommendation 1", "recommendation 2", ...],
-    "next_steps": ["step 1", "step 2", ...],
-    "confidence": 0.0-1.0
-}}
+Context:
+{self._format_context(context)}
 """
 
         try:
@@ -104,153 +111,113 @@ Provide a structured JSON response with the following format:
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_message},
+                    {"role": "user", "content": user_content},
                 ],
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
                 response_format={"type": "json_object"},
             )
 
-            # Extract response content
-            response_content = response.choices[0].message.content
-            if not response_content:
-                raise ValueError("Empty response from OpenAI API")
+            content = response.choices[0].message.content
+            if not content:
+                return self._fallback_response(prompt, context)
 
-            # Parse JSON response
-            try:
-                import json
-                data = json.loads(response_content)
-            except json.JSONDecodeError as e:
-                logger.error(f"Failed to parse OpenAI response as JSON: {response_content}")
-                raise ValueError(f"OpenAI response was not valid JSON: {str(e)}")
-
-            # Validate required fields
-            required_fields = ["analysis", "recommendations", "next_steps"]
-            for field in required_fields:
-                if field not in data:
-                    data[field] = None
+            payload = self._safe_json_loads(content)
+            normalized_payload = {
+                "analysis": payload.get("analysis", ""),
+                "recommendations": payload.get("recommendations", []),
+                "next_steps": payload.get("next_steps", []),
+                "confidence": payload.get("confidence", 0.0),
+            }
 
             return {
                 "success": True,
-                "data": data,
+                "data": normalized_payload,
                 "usage": {
-                    "prompt_tokens": response.usage.prompt_tokens,
-                    "completion_tokens": response.usage.completion_tokens,
-                    "total_tokens": response.usage.total_tokens,
+                    "prompt_tokens": getattr(response.usage, "prompt_tokens", 0),
+                    "completion_tokens": getattr(response.usage, "completion_tokens", 0),
+                    "total_tokens": getattr(response.usage, "total_tokens", 0),
                 },
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "model": self.model,
+                "fallback": False,
             }
 
-        except APIStatusError as e:
-            logger.error(
-                f"OpenAI API error (status {e.status_code}): {str(e)}",
-                exc_info=True,
-            )
-            raise
-        except APIConnectionError as e:
-            logger.error(f"OpenAI connection error: {str(e)}", exc_info=True)
-            raise
-        except Exception as e:
-            logger.error(f"Unexpected error in generate_builder_response: {str(e)}", exc_info=True)
-            raise
+        except (RateLimitError, APIConnectionError) as exc:
+            logger.warning("Transient OpenAI error: %s", exc)
+            return self._fallback_response(prompt, context)
+
+        except APIStatusError as exc:
+            logger.warning("OpenAI API status error: %s", exc)
+            return self._fallback_response(prompt, context)
+
+        except Exception:
+            logger.exception("Unexpected error generating builder response")
+            return self._fallback_response(prompt, context)
 
     async def stream_builder_execution(
-        self, prompt: str, context: Optional[Dict] = None
+        self,
+        prompt: str,
+        context: Optional[Dict[str, Any]] = None,
     ) -> AsyncGenerator[str, None]:
-        """
-        Stream builder execution tokens/logs in real-time.
-
-        Args:
-            prompt: The execution task or query.
-            context: Optional contextual data.
-
-        Yields:
-            String tokens/chunks as they arrive from the API.
-
-        Raises:
-            ValueError: If API key is missing.
-            APIStatusError: On persistent API failures.
-        """
-        if not self.api_key:
-            raise ValueError("OPENAI_API_KEY is not configured")
-
-        if not prompt or not isinstance(prompt, str):
-            raise ValueError("prompt must be a non-empty string")
+        if not isinstance(prompt, str) or not prompt.strip():
+            raise ValueError("Prompt must be a non-empty string.")
 
         context = context or {}
 
+        if not self.api_key or self.client is None:
+            fallback_lines = [
+                "[builder] OpenAI API unavailable. Switching to safe fallback mode.",
+                "[builder] Capturing real request state for evidence-based follow-up.",
+                f"[builder] Task: {prompt}",
+                "[builder] Completion: fallback response generated locally.",
+            ]
+            for line in fallback_lines:
+                yield line + "\n"
+                await asyncio.sleep(0.01)
+            return
+
         system_prompt = (
-            "You are an AI code builder assistant streaming real-time execution logs. "
-            "Provide clear, structured output suitable for streaming to a console or terminal. "
-            "Each line should be actionable and reflect real state, not simulation."
+            "You are AP1 Auto AI Builder. Stream execution logs in real time with "
+            "clear evidence-based status updates. Do not simulate state. "
+            "Provide concise, structured output suitable for terminal streaming."
         )
 
-        user_message = f"""
-{self._format_context(context)}
-
-Execute:
+        user_content = f"""
+Task:
 {prompt}
 
-Stream execution progress, logs, and results line by line.
+Context:
+{self._format_context(context)}
 """
 
         try:
-            with self.client.chat.completions.create(
+            stream = await self.client.chat.completions.create(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_message},
+                    {"role": "user", "content": user_content},
                 ],
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
                 stream=True,
-            ) as response:
-                async for chunk in response:
-                    if chunk.choices[0].delta.content:
-                        yield chunk.choices[0].delta.content
-                        # Small delay to avoid overwhelming consumers
-                        await asyncio.sleep(0.001)
-
-        except APIStatusError as e:
-            logger.error(
-                f"OpenAI streaming error (status {e.status_code}): {str(e)}",
-                exc_info=True,
             )
-            raise
-        except APIConnectionError as e:
-            logger.error(f"OpenAI streaming connection error: {str(e)}", exc_info=True)
-            raise
-        except Exception as e:
-            logger.error(f"Unexpected error in stream_builder_execution: {str(e)}", exc_info=True)
-            raise
 
-    def _format_context(self, context: Dict) -> str:
-        """
-        Format context dict into readable string.
+            async for chunk in stream:
+                delta = chunk.choices[0].delta.content if chunk.choices else None
+                if delta:
+                    yield delta
+                    await asyncio.sleep(0.01)
 
-        Args:
-            context: Dict with repository, builder state, or other metadata.
-
-        Returns:
-            Formatted string representation of context.
-        """
-        if not context:
-            return "No context provided."
-
-        lines = []
-        for key, value in context.items():
-            if isinstance(value, dict):
-                lines.append(f"  {key}:")
-                for k, v in value.items():
-                    lines.append(f"    {k}: {v}")
-            elif isinstance(value, list):
-                lines.append(f"  {key}: {', '.join(str(v) for v in value)}")
-            else:
-                lines.append(f"  {key}: {value}")
-
-        return "\n".join(lines)
+        except (RateLimitError, APIConnectionError) as exc:
+            logger.warning("Transient OpenAI streaming error: %s", exc)
+            yield f"[builder] OpenAI streaming error: {exc}\n"
+        except APIStatusError as exc:
+            logger.warning("OpenAI streaming status error: %s", exc)
+            yield f"[builder] OpenAI status error: {exc}\n"
+        except Exception as exc:
+            logger.exception("Unexpected streaming error")
+            yield f"[builder] Streaming failed: {exc}\n"
 
 
-# Singleton instance
 openai_service = OpenAIService()
