@@ -35,4 +35,4 @@ jobs:
           MONGO_URL: mongodb://localhost:27017
           DB_NAME: ap1_ci
           CORS_ORIGINS: http://localhost:3000
-        run: python -m pytest
+        run: python -m pytest ../tests
