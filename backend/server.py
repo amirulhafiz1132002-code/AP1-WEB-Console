@@ -73,6 +73,10 @@ async def get_status_checks():
 from routes.github_routes import router as github_router
 api_router.include_router(github_router)
 
+# Include builder routes
+from routes.builder_routes import router as builder_router
+api_router.include_router(builder_router)
+
 # Include the router in the main app
 app.include_router(api_router)
 

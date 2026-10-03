@@ -11,7 +11,8 @@ from services.openai_service import openai_service
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/builder", tags=["builder"])
+# This router is nested under api_router(prefix="/api") in server.py.
+router = APIRouter(prefix="/builder", tags=["builder"])
 
 
 class BuildRequest(BaseModel):
