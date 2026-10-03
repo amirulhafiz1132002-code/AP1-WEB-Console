@@ -39,6 +39,17 @@ class OpenAIService:
             return "No additional context supplied."
         return json.dumps(context, ensure_ascii=False, indent=2, sort_keys=True)
 
+    @retry(
+        retry=retry_if_exception_type((RateLimitError, APIConnectionError)),
+        wait=wait_exponential(multiplier=1, min=2, max=10),
+        stop=stop_after_attempt(3),
+        reraise=True,
+    )
+    async def _create_completion(self, **kwargs: Any) -> Any:
+        if self.client is None:
+            raise RuntimeError("OpenAI client is not configured.")
+        return await self.client.chat.completions.create(**kwargs)
+
     def _fallback_response(self, prompt: str, context: Dict[str, Any]) -> Dict[str, Any]:
         return {
             "success": True,
@@ -71,12 +82,6 @@ class OpenAIService:
             "fallback": True,
         }
 
-    @retry(
-        retry=retry_if_exception_type((RateLimitError, APIConnectionError)),
-        wait=wait_exponential(multiplier=1, min=2, max=10),
-        stop=stop_after_attempt(3),
-        reraise=True,
-    )
     async def generate_builder_response(
         self,
         prompt: str,
@@ -107,7 +112,7 @@ Context:
 """
 
         try:
-            response = await self.client.chat.completions.create(
+            response = await self._create_completion(
                 model=self.model,
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -144,7 +149,7 @@ Context:
             }
 
         except (RateLimitError, APIConnectionError) as exc:
-            logger.warning("Transient OpenAI error: %s", exc)
+            logger.warning("Transient OpenAI error after retries: %s", exc)
             return self._fallback_response(prompt, context)
 
         except APIStatusError as exc:
