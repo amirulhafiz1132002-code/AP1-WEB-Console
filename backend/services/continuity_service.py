@@ -206,8 +206,13 @@ async def update_task_summary(
     allowed = [TaskStatus.ACKNOWLEDGED.value, TaskStatus.IN_PROGRESS.value, TaskStatus.BLOCKED.value]
     if existing.status not in [TaskStatus(value) for value in allowed]:
         raise InvalidTransition(f"cannot update task in state {existing.status.value}")
-    if status == TaskStatus.COMPLETED and not existing.evidence:
-        raise InvalidTransition("completion requires recorded evidence")
+    if status == TaskStatus.CANCELLED:
+        raise InvalidTransition("cancellation requires a separate human-owner operation")
+    if status == TaskStatus.COMPLETED:
+        if not existing.evidence:
+            raise InvalidTransition("completion requires recorded evidence")
+        if existing.evidence_status.value != "VERIFIED":
+            raise InvalidTransition("completion requires evidence_status VERIFIED")
     return await _transition(
         collection,
         task_id,
