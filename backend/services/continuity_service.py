@@ -6,8 +6,6 @@ This module deliberately does not expose HTTP routes or perform authentication.
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from pydantic import ValidationError
-
 from .continuity_models import TaskCreate, TaskEvent, TaskRecord, TaskStatus
 
 
@@ -113,10 +111,13 @@ async def _transition(
         existing = await collection.find_one({"_id": task_id}, {"_id": 1, "revision": 1, "status": 1})
         if existing is None:
             raise TaskNotFound(task_id)
-        raise RevisionConflict(
-            f"task state changed or transition is not allowed: "
-            f"expected revision {expected_revision}, actual revision {existing.get('revision')}, "
-            f"status {existing.get('status')}"
+        actual_revision = existing.get("revision")
+        if actual_revision != expected_revision:
+            raise RevisionConflict(
+                f"stale task revision: expected {expected_revision}, actual {actual_revision}"
+            )
+        raise InvalidTransition(
+            f"transition {event_type} is not allowed from status {existing.get('status')}"
         )
     record = await get_task(collection, task_id)
     if record is None:
