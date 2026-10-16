@@ -163,3 +163,32 @@ def test_completion_rejects_evidence_marked_unknown():
             collection, record.task_id, claimed.revision, "agent-a",
             "Claimed complete", None, TaskStatus.COMPLETED
         ))
+
+
+def test_acknowledgement_of_non_open_task_is_invalid_transition():
+    collection = FakeCollection()
+    record = run(create_task(collection, payload(), "human-test"))
+    claimed = run(acknowledge_task(collection, record.task_id, 1, "agent-a"))
+    with pytest.raises(InvalidTransition):
+        run(acknowledge_task(collection, record.task_id, claimed.revision, "agent-b"))
+
+
+def test_completion_succeeds_with_verified_evidence():
+    from backend.services.continuity_models import EvidenceItem, EvidenceStatus
+
+    collection = FakeCollection()
+    record = run(create_task(collection, payload(
+        evidence=[EvidenceItem(
+            kind="test",
+            locator="https://github.com/example/repo/actions/runs/123",
+            observed_result="Targeted continuity tests passed",
+        )],
+        evidence_status=EvidenceStatus.VERIFIED,
+    ), "human-test"))
+    claimed = run(acknowledge_task(collection, record.task_id, 1, "agent-a"))
+    completed = run(update_task_summary(
+        collection, record.task_id, claimed.revision, "agent-a",
+        "Acceptance evidence recorded", None, TaskStatus.COMPLETED
+    ))
+    assert completed.status == TaskStatus.COMPLETED
+    assert completed.revision == claimed.revision + 1
