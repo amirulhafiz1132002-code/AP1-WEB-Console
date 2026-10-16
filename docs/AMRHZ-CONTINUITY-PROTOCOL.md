@@ -1,7 +1,7 @@
 # AMRHZ Continuity Protocol
 
 **Protocol state:** PROPOSED  
-**Implementation state:** NOT IMPLEMENTED BY THIS DOCUMENT  
+**Implementation state:** PARTIAL — schema and persistence service added; API/authentication not implemented  
 **Scope:** Durable task checkpoints and explicit handoff between AI agents and development environments  
 **Initial repository:** `amirulhafiz1132002-code/AP1-WEB-Console`
 
@@ -123,4 +123,4 @@ These tests must run against an isolated test database/collection. Do not run te
 6. Run targeted tests, then the relevant regression suite.
 7. Document exact commit and test evidence; do not claim cross-environment continuity until it has been observed.
 
-**Current truth:** this file specifies the intended protocol. It does not claim that a continuity runtime, authentication boundary, persistent checkpoint API, or multi-agent execution has been implemented.
+**Current truth (updated after the first implementation slice):** `backend/services/continuity_models.py` defines validated task records and lifecycle/evidence enums. `backend/services/continuity_service.py` provides Mongo-compatible create/read/versioned-transition operations for task acknowledgement and handoff. `tests/test_continuity_service.py` defines isolated fake-collection tests. These files have not yet been verified by a test run in this change sequence. No continuity HTTP routes, authentication/authorization integration, production MongoDB configuration, cross-environment persistence, or multi-agent deployment have been verified. The service requires callers to supply trusted actor IDs; do not expose it through an API until that identity boundary is implemented and tested.
