@@ -143,3 +143,23 @@ def test_completion_requires_evidence():
             collection, record.task_id, claimed.revision, "agent-a",
             "Claimed complete", None, TaskStatus.COMPLETED
         ))
+
+
+def test_completion_rejects_evidence_marked_unknown():
+    from backend.services.continuity_models import EvidenceItem, EvidenceStatus
+
+    collection = FakeCollection()
+    record = run(create_task(collection, payload(
+        evidence=[EvidenceItem(
+            kind="test",
+            locator="local-test",
+            observed_result="A test result exists but is not verified",
+        )],
+        evidence_status=EvidenceStatus.UNKNOWN,
+    ), "human-test"))
+    claimed = run(acknowledge_task(collection, record.task_id, 1, "agent-a"))
+    with pytest.raises(InvalidTransition):
+        run(update_task_summary(
+            collection, record.task_id, claimed.revision, "agent-a",
+            "Claimed complete", None, TaskStatus.COMPLETED
+        ))
