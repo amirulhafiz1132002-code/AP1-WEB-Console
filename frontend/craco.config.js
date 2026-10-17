@@ -124,11 +124,6 @@ webpackConfig.devServer = (devServerConfig) => {
   return devServerConfig;
 };
 
-// Wrap with visual edits (automatically adds babel plugin, dev server, and overlay in dev mode)
-if (isDevServer) {
-  try {
-    const { withVisualEdits } = require("@emergentbase/visual-edits/craco");
-    
 const configureDevServer = webpackConfig.devServer;
 webpackConfig.devServer = (devServerConfig) =>
   makeDevServerV5Compatible(configureDevServer(devServerConfig));
