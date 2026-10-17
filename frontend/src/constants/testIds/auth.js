@@ -9,7 +9,7 @@
 //   - Reference them in JSX as `data-testid={LOGIN.submitButton}`.
 //
 // Why kebab-case values: required by qabot's CSS-attribute selector matcher
-// and the lint rule `emergent(kebab-case-testid)`.
+// and the repository's test-ID naming rule.
 
 export const LOGIN = {
 	emailInput: 'login-email-input',
