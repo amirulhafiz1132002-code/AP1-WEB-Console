@@ -12,7 +12,7 @@ import { Progress } from '../components/ui/progress';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Skeleton } from '../components/ui/skeleton';
-import { Target, Rocket, Lightbulb, Code2, Database, Cloud, Cpu, Award, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
+import { Target, Rocket, Lightbulb, Code2, Database, Cpu, Award, CheckCircle2, Circle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const Portfolio = () => {
