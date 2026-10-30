@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#080d18">
+<title>AMRHZ Control Center — Development Tracker</title>
+<style>
+:root{color-scheme:dark;--bg:#080d18;--panel:#101a2b;--panel2:#142137;--line:#263650;--text:#edf4ff;--muted:#91a3bd;--cyan:#59d7e8;--green:#54d69a;--amber:#f4c46a;--red:#ff8585;--blue:#85a9ff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 12% 0%,#142b43 0,transparent 35%),var(--bg);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer;border:1px solid var(--line);background:#17263d;color:var(--text);padding:9px 12px;border-radius:9px}button:hover{border-color:var(--cyan)}button.primary{background:#123a4b;border-color:#286b7c;color:#c9faff}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.shell{max-width:1280px;margin:auto;padding:26px 20px 56px}.top{display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line);padding-bottom:20px}.eyebrow{color:var(--cyan);font-size:11px;letter-spacing:.18em;font-weight:800}.brand{font-size:22px;font-weight:850;letter-spacing:.06em}.sub{color:var(--muted);margin-top:3px}.actions{display:flex;gap:8px;flex-wrap:wrap}.notice{margin:18px 0;padding:12px 14px;border:1px solid #6c572c;background:#2b2417;border-radius:10px;color:#f5d99e}.notice strong{color:#ffe8b4}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}.panel,.metric{border:1px solid var(--line);background:linear-gradient(145deg,#111e31,#0d1727);border-radius:14px}.metric{padding:16px}.metric label{display:block;color:var(--muted);font-size:11px;letter-spacing:.12em;font-weight:700}.metric strong{display:block;font-size:30px;line-height:1.2;margin:8px 0 3px;font-variant-numeric:tabular-nums}.metric small{color:var(--muted)}
+.panel{padding:18px;margin-top:14px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.section-head h2{margin:0;font-size:16px}.muted{color:var(--muted)}.bar{height:9px;background:#1b2a40;border-radius:99px;overflow:hidden;margin:12px 0 8px}.bar>span{display:block;height:100%;width:0;background:linear-gradient(90deg,#37a9c5,var(--green));transition:width .2s}.progress-row{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:12px}
+.toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:12px}.toolbar select,.toolbar input,.task input,.task select,.new-task input,.new-task select{background:#0a1423;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px;min-width:0}.toolbar input{flex:1;min-width:170px}
+.task-list{display:grid;gap:9px}.task{display:grid;grid-template-columns:40px minmax(160px,1fr) minmax(140px,180px) minmax(180px,1.2fr);align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:11px;background:#0d1727}.task-num{font-size:12px;color:var(--cyan);font-weight:800}.task h3{font-size:13px;margin:0 0 3px}.task p{margin:0;color:var(--muted);font-size:11px}.task input{width:100%}.status{width:100%}.status[data-status="verified"]{border-color:#276c50;color:#9af0c4}.status[data-status="blocked"]{border-color:#754040;color:#ffaaaa}.status[data-status="in_progress"]{border-color:#725a2b;color:#f6d18c}
+.empty{padding:28px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:10px}
+.footer{margin-top:20px;color:var(--muted);font-size:11px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.modal-backdrop{position:fixed;inset:0;background:#030711cc;display:none;place-items:center;padding:16px}.modal-backdrop.open{display:grid}.modal{width:min(440px,100%);background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}.modal h2{margin:0 0 14px}.modal label{display:block;color:var(--muted);font-size:12px;margin:10px 0 5px}.modal input{width:100%;background:#0a1423;border:1px solid var(--line);border-radius:8px;padding:10px;color:var(--text)}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+@media(max-width:800px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.task{grid-template-columns:28px 1fr}.task .status,.task .evidence{grid-column:2}.top{align-items:flex-start;flex-direction:column}.actions{width:100%}}
+@media(max-width:430px){.shell{padding:18px 12px 40px}.grid{gap:8px}.metric{padding:12px}.metric strong{font-size:25px}.task{gap:8px;padding:10px}}
+</style>
+</head>
+<body>
+<main class="shell">
+<header class="top">
+ <div><div class="eyebrow">AMRHZ // SYSTEM OPERATIONS</div><div class="brand">DEVELOPMENT CONTROL CENTER</div><div class="sub">Project tracking · Audit checkpoints · Evidence-led progress</div></div>
+ <div class="actions"><button id="addProject">＋ Project</button><button id="addTask">＋ Task</button><button id="exportData">Export JSON</button><button id="importData">Import JSON</button><input id="importFile" type="file" accept="application/json" hidden></div>
+</header>
+<div class="notice"><strong>TRACKING MODE: LOCAL / MANUAL</strong> — This page does not read GitHub, run tests, or verify deployments automatically. A task counts as verified only when its status is set to Verified and an evidence reference is supplied. Data is saved in this browser; export a backup regularly.</div>
+<section class="grid" aria-label="Project metrics">
+ <article class="metric"><label>VERIFIED COMPLETION</label><strong id="percent">0%</strong><small>Evidence-backed tasks only</small></article>
+ <article class="metric"><label>TASKS REMAINING</label><strong id="remaining">9</strong><small>Not yet verified</small></article>
+ <article class="metric"><label>BLOCKERS</label><strong id="blockers">0</strong><small>Tasks marked blocked</small></article>
+ <article class="metric"><label>ACTIVE PROJECTS</label><strong id="projectCount">1</strong><small>Tracked in this browser</small></article>
+</section>
+<section class="panel">
+ <div class="section-head"><h2>MISSION OVERVIEW</h2><span class="muted" id="projectLabel">AP1-WEB-Console</span></div>
+ <div class="progress-row"><span id="verifiedLabel">0 of 9 tasks verified</span><span id="progressWeight">0 / 9 points</span></div>
+ <div class="bar" role="progressbar" aria-label="Verified completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar"><span id="progressFill"></span></div>
+ <div class="progress-row"><span>INTENT → ACTION → EVIDENCE → VERIFIED STATE</span><span id="lastSaved">Not saved yet</span></div>
+</section>
+<section class="panel">
+ <div class="section-head"><h2>CHECKPOINT REGISTER</h2><span class="muted">One task · one test · one proof</span></div>
+ <div class="toolbar"><select id="projectFilter" aria-label="Filter by project"></select><select id="statusFilter" aria-label="Filter by status"><option value="all">All statuses</option><option value="not_tested">Not tested</option><option value="in_progress">In progress</option><option value="blocked">Blocked</option><option value="verified">Verified</option></select><input id="search" placeholder="Search tasks or evidence…" aria-label="Search tasks"></div>
+ <div class="task-list" id="taskList"></div>
+</section>
+<footer class="footer"><span>AMRHZ CONTROL CENTER · ADDITIVE MODULE</span><span>v0.1 · Browser-local storage · No deployment or repository mutation</span></footer>
+</main>
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><form class="modal" id="modalForm"><h2 id="modalTitle">Add project</h2><label for="newName">Name</label><input id="newName" maxlength="80" required placeholder="Project name"><div class="modal-actions"><button type="button" id="cancelModal">Cancel</button><button class="primary" type="submit">Add</button></div></form></div>
+<script>
+(() => {
+ const KEY="amrhz-control-center:v1";
+ const seed={version:1,projects:[{id:"ap1-web-console",name:"AP1-WEB-Console"}],tasks:[
+  ["AP1-01","Repository integrity","Confirm branch, commit, working tree and source baseline"],
+  ["AP1-02","Dependency and security audit","Inspect dependency versions, lockfile and advisories"],
+  ["AP1-03","Configuration audit","Review runtime configuration and environment boundaries"],
+  ["AP1-04","Code integrity","Inspect routes, components, backend and data contracts"],
+  ["AP1-05","Production build","Run the production build and retain its output"],
+  ["AP1-06","Functional verification","Test critical user flows and API integrations"],
+  ["AP1-07","Security verification","Review security controls and unresolved findings"],
+  ["AP1-08","Deployment readiness","Verify deployment configuration and release prerequisites"],
+  ["AP1-09","Final audit closure","Publish evidence-linked report and READY / CONDITIONAL / BLOCKED decision"]
+ ].map((x,i)=>({id:x[0],projectId:"ap1-web-console",title:x[1],description:x[2],status:"not_tested",evidence:"",weight:1,updatedAt:null}))};
+ let data=load();
+ const $=id=>document.getElementById(id);
+ function load(){try{const raw=localStorage.getItem(KEY);if(!raw)return structuredClone(seed);const parsed=JSON.parse(raw);if(parsed.version!==1||!Array.isArray(parsed.projects)||!Array.isArray(parsed.tasks))return structuredClone(seed);return parsed}catch{return structuredClone(seed)}}
+ function save(){localStorage.setItem(KEY,JSON.stringify(data));$("lastSaved").textContent="Saved locally · "+new Date().toLocaleTimeString();render()}
+ function verified(t){return t.status==="verified"&&String(t.evidence||"").trim().length>0}
+ function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+ function projectName(id){return data.projects.find(p=>p.id===id)?.name||"Unknown project"}
+ function render(){
+  const filter=$("projectFilter").value||"all",status=$("statusFilter").value||"all",query=$("search").value.trim().toLowerCase();
+  $("projectFilter").innerHTML='<option value="all">All projects</option>'+data.projects.map(p=>'<option value="'+escapeHtml(p.id)+'">'+escapeHtml(p.name)+'</option>').join("");
+  $("projectFilter").value=filter;
+  const visible=data.tasks.filter(t=>(filter==="all"||t.projectId===filter)&&(status==="all"||t.status===status)&&(!query||(t.title+" "+t.description+" "+t.evidence+" "+projectName(t.projectId)).toLowerCase().includes(query)));
+  const scope=data.tasks.filter(t=>filter==="all"||t.projectId===filter),done=scope.filter(verified).length,points=scope.reduce((s,t)=>s+(verified(t)?Number(t.weight||1):0),0),total=scope.reduce((s,t)=>s+Number(t.weight||1),0),pct=total?Math.round(points/total*100):0;
+  $("percent").textContent=pct+"%";$("remaining").textContent=scope.length-done;$("blockers").textContent=scope.filter(t=>t.status==="blocked").length;$("projectCount").textContent=data.projects.length;
+  $("projectLabel").textContent=filter==="all"?"All projects":projectName(filter);$("verifiedLabel").textContent=done+" of "+scope.length+" tasks verified";$("progressWeight").textContent=points+" / "+total+" points";$("progressFill").style.width=pct+"%";$("progressBar").setAttribute("aria-valuenow",pct);
+  $("taskList").innerHTML=visible.length?visible.map((t)=>'<article class="task" data-id="'+escapeHtml(t.id)+'"><div class="task-num">'+escapeHtml(t.id)+'</div><div><h3>'+escapeHtml(t.title)+'</h3><p>'+escapeHtml(projectName(t.projectId))+' · '+escapeHtml(t.description)+'</p></div><select class="status" data-field="status" data-status="'+escapeHtml(t.status)+'" aria-label="Status for '+escapeHtml(t.title)+'"><option value="not_tested" '+(t.status==="not_tested"?"selected":"")+'>Not tested</option><option value="in_progress" '+(t.status==="in_progress"?"selected":"")+'>In progress</option><option value="blocked" '+(t.status==="blocked"?"selected":"")+'>Blocked</option><option value="verified" '+(t.status==="verified"?"selected":"")+'>Verified</option></select><input class="evidence" data-field="evidence" value="'+escapeHtml(t.evidence)+'" placeholder="Evidence URL, test run, commit or report…" aria-label="Evidence for '+escapeHtml(t.title)+'">'+(t.status==="verified"&&!verified(t)?'<p style="grid-column:2/-1;color:var(--amber)">Evidence required before this task counts toward completion.</p>':"")+'</article>').join(""):'<div class="empty">No tasks match this filter. Add a task or change the filters.</div>';
+ }
+ $("taskList").addEventListener("change",e=>{const card=e.target.closest("[data-id]");if(!card)return;const task=data.tasks.find(t=>t.id===card.dataset.id);if(!task)return;const field=e.target.dataset.field;if(!field)return;task[field]=e.target.value;if(field==="status"&&task.status==="verified"&&!String(task.evidence||"").trim()){task.status="in_progress";alert("Add an evidence reference first, then mark this task Verified.");}task.updatedAt=new Date().toISOString();save()});
+ $("taskList").addEventListener("change",e=>{if(e.target.matches(".evidence")){const card=e.target.closest("[data-id]");const task=data.tasks.find(t=>t.id===card?.dataset.id);if(task){task.evidence=e.target.value;task.updatedAt=new Date().toISOString();save()}}});
+ ["projectFilter","statusFilter"].forEach(id=>$(id).addEventListener("change",render));$("search").addEventListener("input",render);
+ function openModal(title,placeholder,onAdd){$("modalTitle").textContent=title;$("newName").placeholder=placeholder;$("newName").value="";$("modalBackdrop").classList.add("open");$("newName").focus();$("modalForm").onsubmit=e=>{e.preventDefault();const v=$("newName").value.trim();if(v){onAdd(v);$("modalBackdrop").classList.remove("open");save()}}}
+ $("cancelModal").onclick=()=>$("modalBackdrop").classList.remove("open");
+ $("addProject").onclick=()=>openModal("Add project","Project name",name=>{const id=name.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+"-"+Date.now().toString(36);data.projects.push({id,name})});
+ $("addTask").onclick=()=>openModal("Add task","Task title",title=>{const pid=$("projectFilter").value!=="all"?$("projectFilter").value:data.projects[0]?.id;if(!pid){alert("Add a project first.");return}data.tasks.push({id:"TASK-"+Date.now().toString(36).toUpperCase(),projectId:pid,title,description:"Add a clear acceptance criterion in the task title or evidence.",status:"not_tested",evidence:"",weight:1,updatedAt:new Date().toISOString()})});
+ $("exportData").onclick=()=>{const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="amrhz-control-center-backup.json";a.click();URL.revokeObjectURL(url)};
+ $("importData").onclick=()=>$("importFile").click();$("importFile").onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{const incoming=JSON.parse(await file.text());if(incoming.version!==1||!Array.isArray(incoming.projects)||!Array.isArray(incoming.tasks))throw new Error("Unsupported tracker backup");if(!confirm("Replace this browser's tracker data with the imported backup?"))return;data=incoming;save();alert("Tracker backup imported.")}catch(err){alert("Import failed: "+err.message)}finally{e.target.value=""}};
+ render();
+})();
+</script>
+</body></html>
