@@ -343,7 +343,7 @@ export const Portfolio = () => {
           </div>
 
           <div className="space-y-8">
-            {roadmapPhases.map((phase, index) => (
+            {roadmapPhases.map((phase) => (
               <Card
                 key={phase.phase}
                 className={`border-2 ${
