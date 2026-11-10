@@ -52,7 +52,8 @@ class OpenAIService:
 
     def _fallback_response(self, prompt: str, context: Dict[str, Any]) -> Dict[str, Any]:
         return {
-            "success": True,
+            "success": False,
+            "execution_status": "fallback",
             "data": {
                 "analysis": (
                     "OpenAI API is not configured or unavailable. The builder entered a local fallback "
@@ -137,6 +138,7 @@ Context:
 
             return {
                 "success": True,
+                "execution_status": "model",
                 "data": normalized_payload,
                 "usage": {
                     "prompt_tokens": getattr(response.usage, "prompt_tokens", 0),
