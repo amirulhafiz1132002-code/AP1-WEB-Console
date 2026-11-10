@@ -79,3 +79,38 @@ Evidence conditions are separate:
 
 ## Evidence rule
 A contract is not VERIFIED because it appears in this document. Verification requires the corresponding implementation plus credible reproducible evidence.
+
+## Implemented Builder API — execution-state clarification
+
+### POST /api/builder/build
+Purpose: process a Builder request and record its lifecycle event.
+
+Response fields:
+- `request_processed`: true when the route completed request handling.
+- `success`: true only when the response represents successful model-backed execution.
+- `execution_status`: `model`, `fallback`, or `unknown`.
+- `data`: service response, including its `fallback` indicator.
+
+Important distinction:
+- HTTP 200 means the request was handled by the route; it does not by itself prove model execution.
+- A fallback response must not be interpreted as model success.
+- The `builder.completed` event records completion of route processing. Its payload must be inspected for `execution_status`, `model_success`, and `fallback`.
+
+### GET /api/builder/events
+Purpose: read recent Builder lifecycle events from the local JSONL event store.
+
+Security status: authentication/authorization is not established in the inspected route. Events can contain task prompts, context, and result data. Treat this endpoint as sensitive until access controls and data minimization are verified.
+
+### GET /api/builder/health
+Purpose: report Builder event-store readiness without modifying the filesystem.
+
+Returns:
+- `success`: reflects the observed writable state of the existing memory directory.
+- `status`: `ok` or `degraded`.
+- `memory_writable`: whether the existing directory is writable.
+
+The health endpoint is intentionally read-only. A missing memory directory is reported as degraded rather than being created by a GET request.
+
+Evidence: backend/routes/builder_routes.py, backend/services/openai_service.py, tests/test_builder_routes.py.
+
+Verification status: source and test definitions updated on the isolated improvement branch. Runtime test execution and CI results remain pending.
