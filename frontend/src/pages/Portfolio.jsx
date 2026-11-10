@@ -3,6 +3,7 @@ import { Header } from '../components/Header';
 import { Hero } from '../components/Hero';
 import { ProjectCard } from '../components/ProjectCard';
 import { Footer } from '../components/Footer';
+import { TelemetryPanel } from '../components/TelemetryPanel';
 import { NeuralNetworkLayer } from '../components/NeuralNetworkLayer';
 import { githubAPI } from '../services/api';
 import { roadmapPhases, techStack, achievements } from '../mock';
@@ -579,6 +580,7 @@ export const Portfolio = () => {
         </div>
       </section>
 
+      <TelemetryPanel />
       <Footer />
     </div>
   );

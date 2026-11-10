@@ -77,6 +77,10 @@ api_router.include_router(github_router)
 from routes.builder_routes import router as builder_router
 api_router.include_router(builder_router)
 
+# Include privacy-first aggregate telemetry routes
+from routes.telemetry_routes import create_telemetry_router
+api_router.include_router(create_telemetry_router(db))
+
 # Include the router in the main app
 app.include_router(api_router)
 
