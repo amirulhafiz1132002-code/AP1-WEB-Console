@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">AP11 — AP1 Web Console</title>
+  <rect width="512" height="512" rx="104" fill="#fff"/>
+  <g fill="none" stroke-linecap="round" stroke-width="13">
+    <path d="M94 182A180 180 0 0 1 418 125" stroke="#111"/>
+    <path d="M418 125A180 180 0 0 1 455 255" stroke="#1765d1"/>
+    <path d="M418 386A180 180 0 0 1 94 330" stroke="#111"/>
+    <path d="M94 330A180 180 0 0 1 58 255" stroke="#1765d1"/>
+  </g>
+  <g fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 206h62l25 22h40" stroke="#111"/>
+    <path d="M18 256h76l23 20h28" stroke="#1765d1"/>
+    <path d="M18 306h58l25-20h42" stroke="#111"/>
+    <path d="M370 205h48l24-22h52" stroke="#1765d1"/>
+    <path d="M370 256h122" stroke="#1765d1"/>
+    <path d="M370 307h48l24 22h52" stroke="#1765d1"/>
+  </g>
+  <g fill="#fff" stroke-width="9">
+    <circle cx="18" cy="206" r="10" stroke="#111"/><circle cx="18" cy="256" r="10" stroke="#1765d1"/><circle cx="18" cy="306" r="10" stroke="#111"/>
+    <circle cx="494" cy="183" r="10" stroke="#1765d1"/><circle cx="494" cy="256" r="10" stroke="#1765d1"/><circle cx="494" cy="329" r="10" stroke="#1765d1"/>
+  </g>
+  <g font-family="Arial,Helvetica,sans-serif" font-weight="800" text-anchor="middle">
+    <text x="204" y="292" font-size="158" letter-spacing="-15" fill="#080808">AP</text>
+    <text x="378" y="292" font-size="154" letter-spacing="-14" fill="#1765d1">11</text>
+  </g>
+</svg>
