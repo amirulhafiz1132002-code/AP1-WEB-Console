@@ -69,4 +69,23 @@ export const githubAPI = {
   }
 };
 
+// First-party, consent-gated site telemetry
+export const telemetryAPI = {
+  recordEvent: async (eventType) => {
+    const response = await apiClient.post('/telemetry/event', { event_type: eventType });
+    return response.data;
+  },
+  getPublicSummary: async () => {
+    const response = await apiClient.get('/telemetry/public');
+    return response.data;
+  },
+  getAdminSummary: async (token, days = 30) => {
+    const response = await apiClient.get('/telemetry/admin', {
+      params: { days },
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  }
+};
+
 export default apiClient;
