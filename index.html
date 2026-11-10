@@ -1,504 +1,82 @@
 <!doctype html>
-<html lang="en"><head><script src="/_sdk/telemetry_sdk.js"></script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AP1 System</title>
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#080d18">
+  <meta name="description" content="AMRHZ AP1 Identity Gateway preview. Authentication is not connected yet.">
+  <title>AP1 | Identity Gateway</title>
   <style>
-    body { font-family: 'DM Sans', sans-serif; }
-    .spinner-ring {
-      width: 80px; height: 80px; border-radius: 50%;
-      background: conic-gradient(from 0deg, transparent 0%, #818cf8 40%, #c084fc 70%, transparent 100%);
-      animation: spin 1.5s linear infinite;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .spinner-ring::after {
-      content: ''; width: 66px; height: 66px; border-radius: 50%;
-      background: #1e1b2e;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .glow {
-      position: absolute; width: 80px; height: 80px; border-radius: 50%;
-      background: radial-gradient(circle, rgba(129,140,248,0.4) 0%, transparent 70%);
-      animation: glow-pulse 2s ease-in-out infinite;
-    }
-    @keyframes glow-pulse {
-      0%, 100% { transform: scale(1); opacity: 0.6; }
-      50% { transform: scale(1.6); opacity: 0.15; }
-    }
-    .pulse-ring {
-      position: absolute; width: 80px; height: 80px; border-radius: 50%;
-      border: 2px solid rgba(129,140,248,0.3);
-      animation: pulse-out 3s ease-out infinite;
-    }
-    .pulse-ring:nth-child(3) { animation-delay: 1s; }
-    @keyframes pulse-out {
-      0% { transform: scale(1); opacity: 0.6; }
-      100% { transform: scale(3); opacity: 0; }
-    }
-    .progress-track {
-      width: 320px; height: 6px; border-radius: 3px;
-      background: rgba(129,140,248,0.15); overflow: hidden;
-    }
-    .progress-fill {
-      height: 100%; border-radius: 3px;
-      background: linear-gradient(90deg, #818cf8, #c084fc);
-      transition: width 0.4s ease;
-    }
-    .log-line { animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-    #boot-screen { transition: opacity 0.8s ease, transform 0.8s ease; }
-    #dashboard { transition: opacity 0.8s ease; }
-    .dash-card { transition: transform 0.2s, box-shadow 0.2s; }
-    .dash-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(129,140,248,0.2); }
-    .nav-item { transition: background 0.2s; }
-    .nav-item:hover { background: rgba(129,140,248,0.1); }
-    .nav-item.active { background: rgba(129,140,248,0.15); border-left: 3px solid #818cf8; }
+    :root{color-scheme:dark;--bg:#080d18;--panel:#101a2b;--line:rgba(148,163,184,.18);--muted:#91a0b8;--cyan:#67e8f9;--violet:#a5b4fc}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 15% 5%,rgba(8,145,178,.16),transparent 38%),radial-gradient(ellipse at 90% 20%,rgba(99,102,241,.17),transparent 34%),var(--bg);color:#edf4ff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    .wrap{width:min(100% - 32px,980px);margin:auto;padding:28px 0 36px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:22px;border-bottom:1px solid var(--line)}
+    .brand{display:flex;align-items:center;gap:12px}.mark{width:42px;height:42px;display:grid;place-items:center;border:1px solid rgba(103,232,249,.35);border-radius:13px;background:rgba(103,232,249,.08);color:var(--cyan);font-weight:800;letter-spacing:-.08em}
+    .eyebrow{margin:0;color:var(--cyan);font-size:10px;font-weight:800;letter-spacing:.25em}.brand h1{font-size:16px;margin:4px 0 0;letter-spacing:.08em}
+    .tag{font-size:10px;letter-spacing:.12em;color:#fcd34d;border:1px solid rgba(252,211,77,.25);background:rgba(252,211,77,.08);padding:8px 10px;border-radius:999px}
+    main{display:grid;grid-template-columns:1fr .9fr;gap:24px;align-items:center;padding:58px 0}
+    .intro h2{font-size:clamp(32px,5vw,52px);line-height:1.08;letter-spacing:-.045em;margin:16px 0}
+    .gradient{background:linear-gradient(90deg,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .intro p{max-width:480px;color:var(--muted);font-size:14px;line-height:1.8}
+    .panel{border:1px solid var(--line);background:rgba(16,26,43,.88);border-radius:22px;padding:24px;box-shadow:0 24px 70px rgba(0,0,0,.25)}
+    .panel h3{margin:0;font-size:19px}.hint{color:var(--muted);font-size:12px;line-height:1.65;margin:8px 0 20px}
+    .provider{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 15px;margin:10px 0;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025);color:#dbeafe;text-align:left;font:inherit}
+    .provider:disabled{opacity:.68;cursor:not-allowed}.provider span:first-child{display:flex;align-items:center;gap:12px;font-size:13px;font-weight:650}.provider small{font-size:10px;color:#fcd34d;letter-spacing:.08em}
+    .symbol{width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:rgba(148,163,184,.12);font-size:12px;font-weight:800}
+    .notice{margin-top:18px;padding:13px;border-radius:12px;border:1px solid rgba(252,211,77,.2);background:rgba(252,211,77,.06);color:#f6dda0;font-size:11px;line-height:1.7}
+    .sequence{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}.sequence span{font-size:10px;letter-spacing:.08em;color:#9fb0c9;border:1px solid var(--line);padding:8px 10px;border-radius:8px}
+    footer{border-top:1px solid var(--line);padding-top:18px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#71819a;font-size:10px;letter-spacing:.08em}
+    @media(max-width:720px){main{grid-template-columns:1fr;padding:38px 0;gap:24px}.tag{font-size:9px}.panel{padding:20px}}
   </style>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
-  <script src="/_sdk/resizing_sdk.js" type="text/javascript"></script>
- </head>
- <body data-template-id="__page-root" class="w-full overflow-hidden" style="min-height: calc(100 * min(var(--vh,1vh),1vh)); background: radial-gradient(rgb(37, 26, 104), rgb(37, 29, 109), rgb(23, 19, 49));">
-  <!-- BOOT SCREEN -->
-  <div id="boot-screen" class="absolute inset-0 flex flex-col items-center justify-center gap-5 px-4 z-20">
-   <div class="relative flex items-center justify-center" style="width:120px; height:120px;">
-    <div class="spinner-ring"></div>
-    <div class="glow"></div>
-    <div class="pulse-ring"></div>
-    <div class="pulse-ring"></div><img data-template-id="main-logo" class="canva-image absolute inset-0 w-full h-full object-contain opacity-60" loading="lazy" style="border-radius:50%; mix-blend-mode:screen;" src="canva://MAHNO5096XM/1" alt="AP1 logo - futuristic AI technology system">
-   </div>
-   <h1 data-template-id="heading-text" class="canva-text text-center" style="color: rgb(240, 240, 255); font-weight: 700; font-style: normal; font-size: 28px;">AP1 System Boot</h1>
-   <p data-template-id="sub-text" class="canva-text text-center" style="color: rgb(182, 195, 255); font-weight: 400; font-style: normal; font-size: 15px;">Initializing system components...</p>
-   <div class="flex flex-col items-center gap-1">
-    <div class="progress-track">
-     <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-    </div>
-    <p id="progress-percent" class="text-xs" style="color:#a5b4fc">0%</p>
-   </div><!-- Log -->
-   <div id="log-container" class="w-full max-w-sm h-28 overflow-hidden rounded-lg p-3 text-xs font-mono" style="background:rgba(10,8,30,0.7); border:1px solid rgba(129,140,248,0.15); color:#a5b4fc;"></div>
-  </div><!-- DASHBOARD -->
-  <div id="dashboard" class="absolute inset-0 flex opacity-0 pointer-events-none z-10">
-   <!-- Sidebar -->
-   <aside class="w-56 flex-shrink-0 flex flex-col border-r border-indigo-900/30" style="background:rgba(15,12,40,0.95);">
-    <div class="p-4 flex items-center gap-2 border-b border-indigo-900/30">
-     <img data-template-id="dash-logo" class="canva-image w-8 h-8 object-contain" loading="lazy" src="canva://MAHNO5096XM/1" alt="AP1 logo"> <span data-template-id="dash-brand" class="canva-text font-bold text-sm" style="color: rgb(224, 231, 255); font-weight: 700; font-style: normal; font-size: 16px;">AP1 Console</span>
-    </div>
-    <nav class="flex-1 py-3 flex flex-col gap-1 px-2" aria-label="Main navigation">
-     <button class="nav-item active flex items-center gap-2 px-3 py-2 rounded text-sm text-left w-full" style="color:#e0e7ff"><i data-lucide="layout-dashboard" style="width:16px;height:16px"></i><span data-template-id="nav-dashboard" class="canva-text" style="color: rgb(224, 231, 255); font-weight: 400; font-style: normal; font-size: 16px;">Dashboard</span></button> <button class="nav-item flex items-center gap-2 px-3 py-2 rounded text-sm text-left w-full" style="color:#a5b4fc"><i data-lucide="activity" style="width:16px;height:16px"></i><span data-template-id="nav-analytics" class="canva-text" style="color: rgb(165, 180, 252); font-weight: 400; font-style: normal; font-size: 16px;">Analytics</span></button> <button class="nav-item flex items-center gap-2 px-3 py-2 rounded text-sm text-left w-full" style="color:#a5b4fc"><i data-lucide="database" style="width:16px;height:16px"></i><span data-template-id="nav-data" class="canva-text" style="color: rgb(165, 180, 252); font-weight: 400; font-style: normal; font-size: 16px;">Data Store</span></button> <button class="nav-item flex items-center gap-2 px-3 py-2 rounded text-sm text-left w-full" style="color:#a5b4fc"><i data-lucide="cpu" style="width:16px;height:16px"></i><span data-template-id="nav-resources" class="canva-text" style="color: rgb(165, 180, 252); font-weight: 400; font-style: normal; font-size: 16px;">Resources</span></button> <button class="nav-item flex items-center gap-2 px-3 py-2 rounded text-sm text-left w-full" style="color:#a5b4fc"><i data-lucide="alert-circle" style="width:16px;height:16px"></i><span data-template-id="nav-alerts" class="canva-text" style="color: rgb(165, 180, 252); font-weight: 400; font-style: normal; font-size: 16px;">Alerts</span></button> <button class="nav-item flex items-center gap-2 px-3 py-2 rounded text-sm text-left w-full" style="color:#a5b4fc"><i data-lucide="user" style="width:16px;height:16px"></i><span data-template-id="nav-profile" class="canva-text" style="color: rgb(165, 180, 252); font-weight: 400; font-style: normal; font-size: 16px;">Profile</span></button> <button class="nav-item flex items-center gap-2 px-3 py-2 rounded text-sm text-left w-full" style="color:#a5b4fc"><i data-lucide="settings" style="width:16px;height:16px"></i><span data-template-id="nav-settings" class="canva-text" style="color: rgb(165, 180, 252); font-weight: 400; font-style: normal; font-size: 16px;">Settings</span></button>
-    </nav>
-    <div class="p-3 border-t border-indigo-900/30">
-     <button id="restart-btn" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded text-xs" style="background:rgba(129,140,248,0.15); color:#a5b4fc"><i data-lucide="rotate-ccw" style="width:14px;height:14px"></i> Restart System</button>
-    </div>
-   </aside><!-- Main content -->
-   <main class="flex-1 overflow-auto p-6">
-    <header class="flex items-center justify-between mb-6">
-     <div>
-      <h2 data-template-id="dash-title" class="canva-text font-bold" style="color: rgb(240, 240, 255); font-weight: 700; font-style: normal; font-size: 22px;">System Dashboard</h2>
-      <p data-template-id="dash-subtitle" class="canva-text text-sm mt-1" style="color: rgb(165, 180, 252); font-weight: 400; font-style: normal; font-size: 16px;">All systems operational</p>
-     </div>
-     <div class="flex items-center gap-3">
-      <button id="notif-btn" class="relative p-2 rounded-lg" style="background:rgba(129,140,248,0.1); color:#a5b4fc"><i data-lucide="bell" style="width:18px;height:18px"></i><span class="absolute -top-1 -right-1 w-4 h-4 rounded-full text-xs flex items-center justify-center" style="background:#f43f5e; color:#fff; font-size:10px">3</span></button>
-      <div class="w-8 h-8 rounded-full" style="background:linear-gradient(135deg,#818cf8,#c084fc)"></div>
-     </div>
-    </header><!-- Dashboard View -->
-    <div id="view-dashboard" class="view-panel">
-     <!-- Stats row -->
-     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <div data-template-id="stat-card-1" class="canva-card dash-card rounded-xl p-4" style="background: rgba(15, 12, 40, 0.7);">
-       <p class="text-xs uppercase tracking-wide mb-1" style="color:#a5b4fc">Uptime</p>
-       <p id="stat-uptime" class="text-2xl font-bold" style="color:#e0e7ff">00:00:00</p>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="mark" aria-hidden="true">A1</div>
+        <div><p class="eyebrow">AMRHZ / AP1</p><h1>IDENTITY GATEWAY</h1></div>
       </div>
-      <div data-template-id="stat-card-2" class="canva-card dash-card rounded-xl p-4" style="background: rgba(15, 12, 40, 0.7);">
-       <p class="text-xs uppercase tracking-wide mb-1" style="color:#a5b4fc">CPU</p>
-       <p id="stat-cpu" class="text-2xl font-bold" style="color:#e0e7ff">0%</p>
-      </div>
-      <div data-template-id="stat-card-3" class="canva-card dash-card rounded-xl p-4" style="background: rgba(15, 12, 40, 0.7);">
-       <p class="text-xs uppercase tracking-wide mb-1" style="color:#a5b4fc">Memory</p>
-       <p id="stat-mem" class="text-2xl font-bold" style="color:#e0e7ff">0 MB</p>
-      </div>
-      <div data-template-id="stat-card-4" class="canva-card dash-card rounded-xl p-4" style="background: rgba(15, 12, 40, 0.7);">
-       <p class="text-xs uppercase tracking-wide mb-1" style="color:#a5b4fc">Requests</p>
-       <p id="stat-req" class="text-2xl font-bold" style="color:#e0e7ff">0</p>
-      </div>
-     </div><!-- Activity + Notifications -->
-     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <div class="lg:col-span-2 rounded-xl p-4" style="background:rgba(15,12,40,0.6); border:1px solid rgba(129,140,248,0.12);">
-       <h3 data-template-id="activity-title" class="canva-text font-semibold mb-3" style="color: rgb(224, 231, 255); font-weight: 600; font-style: normal; font-size: 19px;">Live Activity</h3>
-       <div id="activity-log" class="space-y-2 text-xs font-mono max-h-48 overflow-auto" style="color:#a5b4fc"></div>
-      </div>
-      <div class="rounded-xl p-4" style="background:rgba(15,12,40,0.6); border:1px solid rgba(129,140,248,0.12);">
-       <h3 data-template-id="notif-title" class="canva-text font-semibold mb-3" style="color: rgb(224, 231, 255); font-weight: 600; font-style: normal; font-size: 19px;">Notifications</h3>
-       <div class="space-y-3">
-        <div class="flex items-start gap-2"><span class="w-2 h-2 mt-1.5 rounded-full flex-shrink-0" style="background:#34d399"></span>
-         <p data-template-id="notif-1" class="canva-text text-xs" style="color: rgb(209, 213, 219); font-weight: 400; font-style: normal; font-size: 16px;">Deployment v2.4.1 completed successfully</p>
+      <span class="tag">PREVIEW · AUTH NOT CONNECTED</span>
+    </header>
+
+    <main>
+      <section class="intro">
+        <p class="eyebrow">ONE ENTRY · HUMAN CONTROL</p>
+        <h2>Access AP1 through a <span class="gradient">verified identity.</span></h2>
+        <p>This is the proposed sign-in gateway for the AP1 Unified Workstation. Users will be able to choose one supported sign-in method. The real authentication service has not been configured, so sign-in is intentionally unavailable in this preview.</p>
+        <div class="sequence" aria-label="Access sequence">
+          <span>IDENTITY</span><span>VERIFIED SESSION</span><span>WORKSTATION</span>
         </div>
-        <div class="flex items-start gap-2"><span class="w-2 h-2 mt-1.5 rounded-full flex-shrink-0" style="background:#fbbf24"></span>
-         <p data-template-id="notif-2" class="canva-text text-xs" style="color: rgb(209, 213, 219); font-weight: 400; font-style: normal; font-size: 16px;">Memory usage approaching 80% threshold</p>
+      </section>
+
+      <section class="panel" aria-labelledby="signin-title">
+        <h3 id="signin-title">Choose a sign-in method</h3>
+        <p class="hint">These are planned alternative methods. Choose one when the AP1 authentication service is configured.</p>
+
+        <button class="provider" type="button" disabled aria-disabled="true">
+          <span><span class="symbol" aria-hidden="true">G</span>Continue with Google</span><small>SETUP REQUIRED</small>
+        </button>
+        <button class="provider" type="button" disabled aria-disabled="true">
+          <span><span class="symbol" aria-hidden="true">GH</span>Continue with GitHub</span><small>SETUP REQUIRED</small>
+        </button>
+        <button class="provider" type="button" disabled aria-disabled="true">
+          <span><span class="symbol" aria-hidden="true">@</span>Continue with email</span><small>SETUP REQUIRED</small>
+        </button>
+        <button class="provider" type="button" disabled aria-disabled="true">
+          <span><span class="symbol" aria-hidden="true">#</span>Continue with mobile number</span><small>SETUP REQUIRED</small>
+        </button>
+
+        <div class="notice" role="status">
+          <strong>Preview boundary:</strong> no credentials are requested or collected here. No provider is connected, no user session is created, and the workstation remains gated until server-side authentication is implemented and verified.
         </div>
-        <div class="flex items-start gap-2"><span class="w-2 h-2 mt-1.5 rounded-full flex-shrink-0" style="background:#f43f5e"></span>
-         <p data-template-id="notif-3" class="canva-text text-xs" style="color: rgb(209, 213, 219); font-weight: 400; font-style: normal; font-size: 16px;">Failed login attempt from 192.168.1.42</p>
-        </div>
-       </div>
-      </div>
-     </div>
-    </div><!-- Analytics View -->
-    <div id="view-analytics" class="view-panel hidden">
-     <div class="rounded-xl p-4" style="background:rgba(15,12,40,0.6); border:1px solid rgba(129,140,248,0.12);">
-      <h3 data-template-id="analytics-title" class="canva-text font-semibold mb-4" style="color: rgb(224, 231, 255); font-weight: 600; font-style: normal; font-size: 19px;">Performance Analytics</h3>
-      <div class="space-y-4">
-       <div>
-        <p class="text-xs mb-2" style="color:#a5b4fc">API Response Time</p>
-        <div class="h-12 rounded bg-gradient-to-r from-indigo-600 to-purple-600 opacity-30"></div>
-       </div>
-       <div>
-        <p class="text-xs mb-2" style="color:#a5b4fc">Request Distribution</p>
-        <div class="space-y-2">
-         <div class="flex items-center gap-2">
-          <div class="text-xs flex-shrink-0" style="width:40px; color:#a5b4fc">
-           GET
-          </div>
-          <div class="flex-1 h-2 rounded" style="background:rgba(129,140,248,0.3); width:70%"></div><span class="text-xs" style="color:#a5b4fc">70%</span>
-         </div>
-         <div class="flex items-center gap-2">
-          <div class="text-xs flex-shrink-0" style="width:40px; color:#a5b4fc">
-           POST
-          </div>
-          <div class="flex-1 h-2 rounded" style="background:rgba(192,132,252,0.3); width:20%"></div><span class="text-xs" style="color:#a5b4fc">20%</span>
-         </div>
-         <div class="flex items-center gap-2">
-          <div class="text-xs flex-shrink-0" style="width:40px; color:#a5b4fc">
-           DELETE
-          </div>
-          <div class="flex-1 h-2 rounded" style="background:rgba(244,63,94,0.3); width:10%"></div><span class="text-xs" style="color:#a5b4fc">10%</span>
-         </div>
-        </div>
-       </div>
-      </div>
-     </div>
-    </div><!-- Data Store View -->
-    <div id="view-data" class="view-panel hidden">
-     <div class="rounded-xl p-4" style="background:rgba(15,12,40,0.6); border:1px solid rgba(129,140,248,0.12);">
-      <h3 data-template-id="data-title" class="canva-text font-semibold mb-4" style="color: rgb(224, 231, 255); font-weight: 600; font-style: normal; font-size: 19px;">Data Store</h3>
-      <div class="overflow-x-auto">
-       <table class="w-full text-xs">
-        <thead>
-         <tr style="border-bottom:1px solid rgba(129,140,248,0.2);">
-          <th class="text-left p-2" style="color:#a5b4fc">Table</th>
-          <th class="text-left p-2" style="color:#a5b4fc">Rows</th>
-          <th class="text-left p-2" style="color:#a5b4fc">Size</th>
-         </tr>
-        </thead>
-        <tbody>
-         <tr style="border-bottom:1px solid rgba(129,140,248,0.1);">
-          <td class="p-2" style="color:#e0e7ff">users</td>
-          <td class="p-2" style="color:#34d399">2,847</td>
-          <td class="p-2" style="color:#a5b4fc">4.2 MB</td>
-         </tr>
-         <tr style="border-bottom:1px solid rgba(129,140,248,0.1);">
-          <td class="p-2" style="color:#e0e7ff">sessions</td>
-          <td class="p-2" style="color:#34d399">891</td>
-          <td class="p-2" style="color:#a5b4fc">1.8 MB</td>
-         </tr>
-         <tr style="border-bottom:1px solid rgba(129,140,248,0.1);">
-          <td class="p-2" style="color:#e0e7ff">logs</td>
-          <td class="p-2" style="color:#34d399">45,203</td>
-          <td class="p-2" style="color:#a5b4fc">12.6 MB</td>
-         </tr>
-        </tbody>
-       </table>
-      </div>
-     </div>
-    </div><!-- Settings View -->
-    <div id="view-settings" class="view-panel hidden">
-     <div class="rounded-xl p-4" style="background:rgba(15,12,40,0.6); border:1px solid rgba(129,140,248,0.12);">
-      <h3 data-template-id="settings-title" class="canva-text font-semibold mb-4" style="color: rgb(224, 231, 255); font-weight: 600; font-style: normal; font-size: 19px;">System Settings</h3>
-      <div class="space-y-4">
-       <div class="flex items-center justify-between p-2"><span style="color:#e0e7ff">Auto-restart enabled</span> <input type="checkbox" checked="" style="accent-color:#818cf8">
-       </div>
-       <div class="flex items-center justify-between p-2"><span style="color:#e0e7ff">Debug mode</span> <input type="checkbox" style="accent-color:#818cf8">
-       </div>
-       <div class="flex items-center justify-between p-2"><span style="color:#e0e7ff">Notifications</span> <input type="checkbox" checked="" style="accent-color:#818cf8">
-       </div>
-      </div>
-     </div>
-    </div><!-- Alerts View -->
-    <div id="view-alerts" class="view-panel hidden">
-     <div class="rounded-xl p-4" style="background:rgba(15,12,40,0.6); border:1px solid rgba(129,140,248,0.12);">
-      <h3 data-template-id="alerts-title" class="canva-text font-semibold mb-4" style="color: rgb(224, 231, 255); font-weight: 600; font-style: normal; font-size: 19px;">System Alerts</h3>
-      <div class="space-y-3">
-       <div class="flex items-start gap-3 p-3 rounded" style="background:rgba(244,63,94,0.1); border:1px solid rgba(244,63,94,0.2);"><i data-lucide="alert-triangle" style="width:16px;height:16px; color:#f43f5e; flex-shrink:0; margin-top:2px"></i>
-        <div>
-         <p style="color: rgb(244, 63, 94); font-weight: 400; font-size: 16px; font-style: normal;" data-template-id="alert-critical">Database replication lag detected</p>
-         <p style="color:#a5b4fc; font-size:11px; margin-top:2px">5 minutes ago</p>
-        </div>
-       </div>
-       <div class="flex items-start gap-3 p-3 rounded" style="background:rgba(251,191,36,0.1); border:1px solid rgba(251,191,36,0.2);"><i data-lucide="alert-circle" style="width:16px;height:16px; color:#fbbf24; flex-shrink:0; margin-top:2px"></i>
-        <div>
-         <p style="color: rgb(251, 191, 36); font-weight: 400; font-size: 16px; font-style: normal;" data-template-id="alert-warning">High memory usage on node-3</p>
-         <p style="color:#a5b4fc; font-size:11px; margin-top:2px">12 minutes ago</p>
-        </div>
-       </div>
-       <div class="flex items-start gap-3 p-3 rounded" style="background:rgba(52,211,153,0.1); border:1px solid rgba(52,211,153,0.2);"><i data-lucide="check-circle" style="width:16px;height:16px; color:#34d399; flex-shrink:0; margin-top:2px"></i>
-        <div>
-         <p style="color: rgb(52, 211, 153); font-weight: 400; font-size: 16px; font-style: normal;" data-template-id="alert-info">Backup completed successfully</p>
-         <p style="color:#a5b4fc; font-size:11px; margin-top:2px">1 hour ago</p>
-        </div>
-       </div>
-      </div>
-     </div>
-    </div><!-- Resources View -->
-    <div id="view-resources" class="view-panel hidden">
-     <div class="rounded-xl p-4" style="background:rgba(15,12,40,0.6); border:1px solid rgba(129,140,248,0.12);">
-      <h3 data-template-id="resources-title" class="canva-text font-semibold mb-4" style="color: rgb(224, 231, 255); font-weight: 600; font-style: normal; font-size: 19px;">System Resources</h3>
-      <div class="space-y-4">
-       <div>
-        <div class="flex justify-between mb-2">
-         <p style="color: rgb(165, 180, 252); font-size: 16px; font-weight: 400; font-style: normal;" data-template-id="resource-cpu">CPU Usage</p>
-         <p style="color:#818cf8; font-weight:600; font-size:12px">45.2%</p>
-        </div>
-        <div class="h-2 rounded-full" style="background:rgba(129,140,248,0.15); overflow:hidden">
-         <div class="h-full rounded-full" style="background:linear-gradient(90deg,#818cf8,#c084fc); width:45.2%"></div>
-        </div>
-       </div>
-       <div>
-        <div class="flex justify-between mb-2">
-         <p style="color: rgb(165, 180, 252); font-size: 16px; font-weight: 400; font-style: normal;" data-template-id="resource-memory">Memory Usage</p>
-         <p style="color:#818cf8; font-weight:600; font-size:12px">62.8%</p>
-        </div>
-        <div class="h-2 rounded-full" style="background:rgba(129,140,248,0.15); overflow:hidden">
-         <div class="h-full rounded-full" style="background:linear-gradient(90deg,#818cf8,#c084fc); width:62.8%"></div>
-        </div>
-       </div>
-       <div>
-        <div class="flex justify-between mb-2">
-         <p style="color: rgb(165, 180, 252); font-size: 16px; font-weight: 400; font-style: normal;" data-template-id="resource-disk">Disk Usage</p>
-         <p style="color:#818cf8; font-weight:600; font-size:12px">78.5%</p>
-        </div>
-        <div class="h-2 rounded-full" style="background:rgba(129,140,248,0.15); overflow:hidden">
-         <div class="h-full rounded-full" style="background:linear-gradient(90deg,#818cf8,#c084fc); width:78.5%"></div>
-        </div>
-       </div>
-       <div>
-        <div class="flex justify-between mb-2">
-         <p style="color: rgb(165, 180, 252); font-size: 16px; font-weight: 400; font-style: normal;" data-template-id="resource-network">Network I/O</p>
-         <p style="color:#818cf8; font-weight:600; font-size:12px">23.1%</p>
-        </div>
-        <div class="h-2 rounded-full" style="background:rgba(129,140,248,0.15); overflow:hidden">
-         <div class="h-full rounded-full" style="background:linear-gradient(90deg,#818cf8,#c084fc); width:23.1%"></div>
-        </div>
-       </div>
-      </div>
-     </div>
-    </div>
-    <div id="view-profile" class="view-panel hidden">
-     <div class="space-y-4">
-      <!-- Profile Card -->
-      <div class="rounded-xl p-6" style="background:rgba(15,12,40,0.6); border:1px solid rgba(129,140,248,0.12);">
-       <div class="flex gap-4 mb-4">
-        <img data-template-id="profile-avatar" class="canva-image w-16 h-16 rounded-full object-cover" loading="lazy" src="canva://MAHNPOmKgJY/1" alt="Mohammad Amzad Huda - Developer profile">
-        <div class="flex-1">
-         <h3 data-template-id="profile-name" class="canva-text font-bold text-lg" style="color: rgb(240, 240, 255); font-weight: 700; font-style: normal; font-size: 18px;">Muhammad Amirul Hafiz Bin Md Khalil Miah</h3>
-         <p data-template-id="profile-handle" class="canva-text text-xs mt-1" style="color: rgb(165, 180, 252); font-weight: 400; font-style: normal; font-size: 12px;">Muhammad Amirul Hafiz</p>
-        </div>
-       </div>
-       <p data-template-id="profile-bio" class="canva-text text-sm mb-4" style="color: rgb(209, 213, 219); font-weight: 400; font-style: normal; font-size: 14px;">Full-stack developer building web applications with JavaScript, Python, and TypeScript. Passionate about open-source and creating meaningful digital solutions.</p>
-       <div class="flex gap-2">
-        <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="p-2 rounded" style="background:rgba(129,140,248,0.1); color:#a5b4fc"><i data-lucide="github" style="width:16px;height:16px"></i></a> <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" class="p-2 rounded" style="background:rgba(129,140,248,0.1); color:#a5b4fc"><i data-lucide="twitter" style="width:16px;height:16px"></i></a> <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" class="p-2 rounded" style="background:rgba(129,140,248,0.1); color:#a5b4fc"><i data-lucide="linkedin" style="width:16px;height:16px"></i></a>
-       </div>
-      </div><!-- Stats Grid -->
-      <div class="grid grid-cols-3 gap-3">
-       <div class="rounded-xl p-4 text-center" style="background:rgba(15,12,40,0.6); border:1px solid rgba(129,140,248,0.12);">
-        <p class="text-xl font-bold" style="color: rgb(129, 140, 248); font-weight: 700; font-style: normal; font-size: 16px;" data-template-id="profile-repos">8</p>
-        <p class="text-xs mt-1" style="color:#a5b4fc">Repositories</p>
-       </div>
-       <div class="rounded-xl p-4 text-center" style="background:rgba(15,12,40,0.6); border:1px solid rgba(129,140,248,0.12);">
-        <p class="text-xl font-bold" style="color: rgb(129, 140, 248); font-weight: 700; font-style: normal; font-size: 16px;" data-template-id="profile-contrib">120</p>
-        <p class="text-xs mt-1" style="color:#a5b4fc">Contributions</p>
-       </div>
-       <div class="rounded-xl p-4 text-center" style="background:rgba(15,12,40,0.6); border:1px solid rgba(129,140,248,0.12);">
-        <p class="text-xl font-bold" style="color: rgb(129, 140, 248); font-weight: 700; font-style: normal; font-size: 16px;" data-template-id="profile-followers">15</p>
-        <p class="text-xs mt-1" style="color:#a5b4fc">Followers</p>
-       </div>
-      </div><!-- Skills Section -->
-      <div class="rounded-xl p-4" style="background:rgba(15,12,40,0.6); border:1px solid rgba(129,140,248,0.12);">
-       <h3 data-template-id="profile-skills-title" class="canva-text font-semibold mb-3" style="color: rgb(224, 231, 255); font-weight: 600; font-style: normal; font-size: 19px;">Technical Skills</h3>
-       <div class="flex flex-wrap gap-2">
-        <span class="px-3 py-1 rounded text-xs" style="background: rgba(129, 140, 248, 0.15); color: rgb(165, 180, 252); font-weight: 400; font-style: normal; font-size: 16px;" data-template-id="skill-1">JavaScript</span> <span class="px-3 py-1 rounded text-xs" style="background: rgba(129, 140, 248, 0.15); color: rgb(165, 180, 252); font-weight: 400; font-style: normal; font-size: 16px;" data-template-id="skill-2">Python</span> <span class="px-3 py-1 rounded text-xs" style="background: rgba(129, 140, 248, 0.15); color: rgb(165, 180, 252); font-weight: 400; font-style: normal; font-size: 16px;" data-template-id="skill-3">React</span> <span class="px-3 py-1 rounded text-xs" style="background: rgba(129, 140, 248, 0.15); color: rgb(165, 180, 252); font-weight: 400; font-style: normal; font-size: 16px;" data-template-id="skill-4">Node.js</span>
-       </div>
-      </div><!-- Achievements Section -->
-      <div class="rounded-xl p-4" style="background:rgba(15,12,40,0.6); border:1px solid rgba(129,140,248,0.12);">
-       <h3 data-template-id="profile-achievements-title" class="canva-text font-semibold mb-3" style="color: rgb(224, 231, 255); font-weight: 600; font-style: normal; font-size: 19px;">Achievements</h3>
-       <div class="space-y-2">
-        <div class="flex items-center gap-2">
-         <i data-lucide="award" style="width:16px;height:16px; color:#fbbf24"></i>
-         <p data-template-id="achievement-1" class="canva-text text-xs" style="color: rgb(209, 213, 219); font-weight: 400; font-style: normal; font-size: 16px;">120 contributions in the last year</p>
-        </div>
-        <div class="flex items-center gap-2">
-         <i data-lucide="star" style="width:16px;height:16px; color:#fbbf24"></i>
-         <p data-template-id="achievement-2" class="canva-text text-xs" style="color: rgb(209, 213, 219); font-weight: 400; font-style: normal; font-size: 16px;">Active open-source maintainer and contributor</p>
-        </div>
-       </div>
-      </div>
-     </div>
-    </div>
-   </main>
+      </section>
+    </main>
+
+    <footer>
+      <span>AMRHZ AP1 · IDENTITY FOUNDATION</span>
+      <span>AUDIT → PRIORITIZE → EXECUTE → VERIFY</span>
+    </footer>
   </div>
-  <script src="/_sdk/editing_sdk.js"></script>
-  <script>
-    lucide.createIcons();
-
-    const bootScreen = document.getElementById('boot-screen');
-    const dashboard = document.getElementById('dashboard');
-    const fill = document.getElementById('progress-fill');
-    const pct = document.getElementById('progress-percent');
-    const logContainer = document.getElementById('log-container');
-
-    const bootMessages = [
-      '[BOOT] Power-on self-test... OK',
-      '[BOOT] Loading kernel modules...',
-      '[SYS] Initializing memory allocator...',
-      '[SYS] Memory check: 16384 MB available',
-      '[NET] Bringing up network interfaces...',
-      '[NET] eth0: link up at 1000 Mbps',
-      '[AUTH] Loading security certificates...',
-      '[AUTH] Certificate chain verified ✓',
-      '[DB] Connecting to primary database...',
-      '[DB] Connection pool established (8 connections)',
-      '[SVC] Starting API gateway...',
-      '[SVC] Starting worker processes (x4)...',
-      '[SVC] Health check passed ✓',
-      '[SYNC] Synchronizing cluster state...',
-      '[SYNC] Node registered: ap1-primary',
-      '[SYS] All services operational',
-      '[SYS] System ready. Launching dashboard...'
-    ];
-
-    let progress = 0;
-    let msgIndex = 0;
-    let bootInterval;
-
-    function addLog(msg) {
-      const line = document.createElement('div');
-      line.className = 'log-line';
-      line.textContent = msg;
-      logContainer.appendChild(line);
-      logContainer.scrollTop = logContainer.scrollHeight;
-    }
-
-    function startBoot() {
-      progress = 0; msgIndex = 0;
-      fill.style.width = '0%';
-      pct.textContent = '0%';
-      logContainer.innerHTML = '';
-      bootScreen.style.opacity = '1';
-      bootScreen.style.transform = 'scale(1)';
-      bootScreen.style.pointerEvents = 'auto';
-      dashboard.style.opacity = '0';
-      dashboard.style.pointerEvents = 'none';
-
-      bootInterval = setInterval(() => {
-        progress += Math.random() * 5 + 2;
-        if (progress > 100) progress = 100;
-        const p = Math.round(progress);
-        fill.style.width = p + '%';
-        pct.textContent = p + '%';
-
-        if (msgIndex < bootMessages.length && progress > (msgIndex / bootMessages.length) * 95) {
-          addLog(bootMessages[msgIndex]);
-          msgIndex++;
-        }
-
-        if (progress >= 100) {
-          clearInterval(bootInterval);
-          fill.style.width = '100%';
-          pct.textContent = '100%';
-          addLog('[SYS] Boot complete.');
-          setTimeout(showDashboard, 800);
-        }
-      }, 250);
-    }
-
-    function showDashboard() {
-      bootScreen.style.opacity = '0';
-      bootScreen.style.transform = 'scale(0.95)';
-      bootScreen.style.pointerEvents = 'none';
-      setTimeout(() => {
-        dashboard.style.opacity = '1';
-        dashboard.style.pointerEvents = 'auto';
-        startDashboard();
-      }, 600);
-    }
-
-    // Dashboard live stats
-    let uptime = 0;
-    let dashInterval;
-    function startDashboard() {
-      if (dashInterval) clearInterval(dashInterval);
-      uptime = 0;
-      dashInterval = setInterval(() => {
-        uptime++;
-        const h = String(Math.floor(uptime/3600)).padStart(2,'0');
-        const m = String(Math.floor((uptime%3600)/60)).padStart(2,'0');
-        const s = String(uptime%60).padStart(2,'0');
-        document.getElementById('stat-uptime').textContent = `${h}:${m}:${s}`;
-        document.getElementById('stat-cpu').textContent = (12 + Math.random()*20).toFixed(1) + '%';
-        document.getElementById('stat-mem').textContent = (1024 + Math.floor(Math.random()*512)) + ' MB';
-        document.getElementById('stat-req').textContent = String(Math.floor(uptime * (3 + Math.random()*2)));
-      }, 1000);
-
-      // Activity log
-      const activities = ['GET /api/users 200 12ms','POST /api/data 201 45ms','GET /health 200 2ms','WS connection opened','Cache miss: user:1042','GET /api/metrics 200 8ms','Scheduled task: cleanup','DB query: 3.2ms'];
-      let ai = 0;
-      const actLog = document.getElementById('activity-log');
-      setInterval(() => {
-        const line = document.createElement('div');
-        line.className = 'log-line';
-        line.textContent = `[${new Date().toLocaleTimeString()}] ${activities[ai % activities.length]}`;
-        actLog.prepend(line);
-        if (actLog.children.length > 20) actLog.lastChild.remove();
-        ai++;
-      }, 2000);
-    }
-
-    // Restart
-    document.getElementById('restart-btn').addEventListener('click', () => {
-      if (dashInterval) clearInterval(dashInterval);
-      startBoot();
-    });
-
-    // Nav interaction with view switching
-    const navItems = document.querySelectorAll('.nav-item');
-    const viewMap = {
-      0: 'view-dashboard',
-      1: 'view-analytics',
-      2: 'view-data',
-      3: 'view-resources',
-      4: 'view-alerts',
-      5: 'view-profile',
-      6: 'view-settings'
-    };
-
-    navItems.forEach((btn, index) => {
-      btn.addEventListener('click', () => {
-        navItems.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        
-        // Hide all view panels
-        document.querySelectorAll('.view-panel').forEach(panel => {
-          panel.classList.add('hidden');
-        });
-        
-        // Show selected view
-        const viewId = viewMap[index];
-        if (viewId) {
-          document.getElementById(viewId).classList.remove('hidden');
-        }
-      });
-    });
-
-    startBoot();
-  </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0fb30d7834ea559',t:'MTc4MjEzMDY1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-</body></html>
+</body>
+</html>
