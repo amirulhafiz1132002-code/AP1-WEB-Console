@@ -45,13 +45,24 @@ async def build_builder_task(payload: BuildRequest):
                 "task": payload.task,
                 "repository": payload.repository,
                 "priority": payload.priority,
+                "execution_status": response.get("execution_status", "unknown"),
+                "model_success": response.get("success") is True and not response.get("fallback", False),
+                "fallback": response.get("fallback", False),
                 "result": response,
             },
         )
 
+        model_success = response.get("success") is True and not response.get("fallback", False)
+        execution_status = response.get("execution_status", "unknown")
         return {
-            "success": True,
-            "message": "Builder task processed successfully.",
+            "success": model_success,
+            "request_processed": True,
+            "execution_status": execution_status,
+            "message": (
+                "Builder model execution completed successfully."
+                if model_success
+                else "Builder request processed without verified model execution."
+            ),
             "data": response,
         }
 
@@ -91,20 +102,12 @@ async def get_builder_events(limit: int = 50):
 
 @router.get("/health")
 async def builder_health():
-    memory_path = Path(__file__).resolve().parents[2] / "memory" / "events.jsonl"
-    writable = False
-    try:
-        memory_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(memory_path, "a", encoding="utf-8") as handle:
-            handle.write("")
-        writable = True
-    except Exception as exc:
-        logger.warning("Memory write check failed: %s", exc)
-        writable = False
+    memory_dir = Path(__file__).resolve().parents[2] / "memory"
+    writable = memory_dir.is_dir() and os.access(memory_dir, os.W_OK)
 
     return {
-        "success": True,
-        "status": "ok",
+        "success": writable,
+        "status": "ok" if writable else "degraded",
         "memory_writable": writable,
         "model": os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
         "service": "builder",
