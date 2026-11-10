@@ -31,10 +31,12 @@ export const TelemetryPanel = () => {
   const recordPageView = useCallback(async () => {
     try {
       if (window.sessionStorage.getItem(VIEW_KEY) === '1') return;
-      await telemetryAPI.recordEvent('page_view');
+      // Set the guard before the request to prevent a consent-click/effect race.
       window.sessionStorage.setItem(VIEW_KEY, '1');
+      await telemetryAPI.recordEvent('page_view');
       await loadPublicStats();
     } catch {
+      try { window.sessionStorage.removeItem(VIEW_KEY); } catch { /* Ignore storage failures. */ }
       // Telemetry must never interrupt the portfolio experience.
     }
   }, [loadPublicStats]);
