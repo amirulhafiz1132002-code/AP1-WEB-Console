@@ -1,3 +1,4 @@
+import json
 import os
 
 import pytest
@@ -90,7 +91,7 @@ def test_fallback_is_not_reported_as_model_success(
     assert body["data"]["fallback"] is True
 
     events = [
-        __import__("json").loads(line)
+        json.loads(line)
         for line in isolated_events_file.read_text(encoding="utf-8").splitlines()
     ]
     completed = next(event for event in events if event["event_type"] == "builder.completed")
