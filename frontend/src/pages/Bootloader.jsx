@@ -1,8 +1,8 @@
 import React from "react";
 import {
   Activity, ArrowUpRight, Bot, Boxes, Code2, Command, Database,
-  ExternalLink, GitBranch, LayoutDashboard, Network, ShieldCheck,
-  Sparkles, Workflow, Zap
+  ExternalLink, GitBranch, Network, ShieldCheck,
+  Sparkles, Workflow
 } from "lucide-react";
 
 const modules = [
