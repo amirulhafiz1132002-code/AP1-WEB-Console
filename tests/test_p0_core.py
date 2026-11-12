@@ -38,25 +38,25 @@ def mock_env(monkeypatch):
 
 @pytest.fixture
 def mock_motor_client(mock_env, monkeypatch):
-    """Mock motor.motor_asyncio.AsyncIOMotorClient."""
-    mock_client = mock.AsyncMock()
-    mock_db = mock.AsyncMock()
-    mock_collection = mock.AsyncMock()
-    
-    # Setup the mock chain: client[db_name] -> db.collection_name
-    mock_client.__getitem__.return_value = mock_db
-    mock_db.status_checks = mock_collection
-    
-    # Mock insert_one and find
+    """Replace already-imported backend database dependencies."""
+    from backend import server
+
+    mock_client = mock.Mock()
+    mock_client.close = mock.Mock()
+
+    mock_db = mock.Mock()
+    mock_collection = mock.Mock()
+
     mock_collection.insert_one = mock.AsyncMock()
-    mock_collection.find.return_value.to_list = mock.AsyncMock(return_value=[])
-    
-    # Patch motor.motor_asyncio.AsyncIOMotorClient
-    monkeypatch.setattr(
-        "motor.motor_asyncio.AsyncIOMotorClient",
-        mock.Mock(return_value=mock_client)
-    )
-    
+    mock_cursor = mock.Mock()
+    mock_cursor.to_list = mock.AsyncMock(return_value=[])
+    mock_collection.find.return_value = mock_cursor
+
+    mock_db.status_checks = mock_collection
+
+    monkeypatch.setattr(server, "client", mock_client)
+    monkeypatch.setattr(server, "db", mock_db)
+
     return mock_client, mock_db, mock_collection
 
 
@@ -118,7 +118,7 @@ class TestApplicationStartup:
         """Verify CORS middleware is attached to app."""
         app, _, _ = app_and_client
         # Check that CORSMiddleware is in the middleware stack
-        middleware_types = [type(m.cls).__name__ for m in app.user_middleware]
+        middleware_types = [m.cls.__name__ for m in app.user_middleware]
         assert "CORSMiddleware" in middleware_types
 
 

@@ -1,22 +1,23 @@
-from pathlib import Path
-
+import pytest
 from fastapi.testclient import TestClient
 
 from backend.server import app
+from services import memory_service
 
-TEST_EVENTS_PATH = Path(__file__).resolve().parents[1] / "memory" / "events.jsonl"
 
+@pytest.fixture
+def isolated_events_file(monkeypatch, tmp_path):
+    test_memory_dir = tmp_path / "memory"
+    test_events_file = test_memory_dir / "events.jsonl"
 
-def setup_memory_file() -> None:
-    TEST_EVENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    if TEST_EVENTS_PATH.exists():
-        TEST_EVENTS_PATH.unlink()
-    TEST_EVENTS_PATH.touch()
+    monkeypatch.setattr(memory_service, "MEMORY_DIR", test_memory_dir)
+    monkeypatch.setattr(memory_service, "EVENTS_FILE", test_events_file)
+
+    return test_events_file
 
 
 def test_build_rejects_empty_or_malformed_inputs():
     client = TestClient(app)
-    setup_memory_file()
 
     bad_payloads = [
         {},
@@ -30,9 +31,8 @@ def test_build_rejects_empty_or_malformed_inputs():
         assert response.status_code == 422
 
 
-def test_valid_build_appends_state_entry():
+def test_valid_build_appends_state_entry(isolated_events_file):
     client = TestClient(app)
-    setup_memory_file()
 
     payload = {
         "task": "Create a secure AI builder workflow",
@@ -42,14 +42,13 @@ def test_valid_build_appends_state_entry():
     response = client.post("/api/builder/build", json=payload)
     assert response.status_code == 200
 
-    lines = TEST_EVENTS_PATH.read_text(encoding="utf-8").splitlines()
+    lines = isolated_events_file.read_text(encoding="utf-8").splitlines()
     assert any('"event_type": "builder.started"' in line for line in lines)
     assert any('"event_type": "builder.completed"' in line for line in lines)
 
 
-def test_get_events_reads_back_recorded_logs():
+def test_get_events_reads_back_recorded_logs(isolated_events_file):
     client = TestClient(app)
-    setup_memory_file()
 
     payload = {
         "task": "Read repository state and summarize",
